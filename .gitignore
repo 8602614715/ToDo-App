@@ -1,0 +1,18 @@
+# Virtual environment
+myvenv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment variables
+.env
+
+# Database
+*.db
+
+# Editor
+.vscode/
+.idea/
