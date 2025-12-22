@@ -3,10 +3,9 @@ from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-
-import models
-from database import Engine
-from routers import auth, todos, admin, users
+from ToDoApp import models
+from ToDoApp.database import engine
+from ToDoApp.routers import auth, todos, admin, users
 
 app = FastAPI()
 
@@ -17,7 +16,7 @@ app.add_middleware(
 )
 
 # ---------------- DATABASE ----------------
-models.Base.metadata.create_all(bind=Engine)
+models.Base.metadata.create_all(bind=engine)
 
 # ---------------- STATIC FILES ----------------
 app.mount("/static", StaticFiles(directory="static"), name="static")

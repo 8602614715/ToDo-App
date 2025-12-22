@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, Request, HTTPException, status, Form
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import Annotated
-from database import SessionLocal
-from models import ToDoItem
-from routers.auth import get_current_user
-from fastapi.templating import Jinja2Templates
+from ToDoApp.database import SessionLocal
+from ToDoApp.models import ToDoItem
+from ToDoApp.routers.auth import get_current_user
+from ToDoApp.fastapi.templating import Jinja2Templates
 
 router = APIRouter(prefix="/todos", tags=["todos"])
 templates = Jinja2Templates(directory="template")

@@ -1,10 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Path
-import models
-from database import Engine, SessionLocal
+from ToDoApp import models
+from ToDoApp.database import engine, SessionLocal
 from sqlalchemy.orm import Session as session
-from routers import auth
-from routers.todos import get_db
+from ToDoApp.routers import auth
+from ToDoApp.routers.todos import get_db
 
 router = APIRouter(prefix='/admin', tags=['admin'])
 
@@ -15,7 +15,7 @@ def get_db():
     finally:
         db.close()
 
-models.Base.metadata.create_all(bind=Engine)
+models.Base.metadata.create_all(bind=engine)
 
 db_dependency = Annotated[session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(auth.get_current_user)]

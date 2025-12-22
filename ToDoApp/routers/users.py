@@ -1,10 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Path
-from models import Users
-import models, schemas
-from database import Engine, SessionLocal
+from ToDoApp.models import Users
+from ToDoApp import models, schemas
+from ToDoApp.database import engine, SessionLocal
 from sqlalchemy.orm import Session as session
-from routers import auth
+from ToDoApp.routers import auth
 from passlib.context import CryptContext
 from passlib.exc import UnknownHashError
 
@@ -18,7 +18,7 @@ def get_db():
     finally:
         db.close()
 
-models.Base.metadata.create_all(bind=Engine)
+models.Base.metadata.create_all(bind=engine)
 
 db_dependency = Annotated[session, Depends(get_db)]
 user_depedency = Annotated[dict, Depends(auth.get_current_user)]

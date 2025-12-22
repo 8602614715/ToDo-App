@@ -1,6 +1,6 @@
 from fastapi import status
 from Test.utils import client, test_user, test_todo, TestingSessionLocal
-from models import ToDoItem as Todos
+from ToDoApp.models import ToDoItem as Todos
 
 def test_read_all_authenticated(test_user, test_todo):
     response = client.get("/todos/")
