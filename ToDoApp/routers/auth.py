@@ -18,7 +18,7 @@ SECRET_KEY = "fb38d7a9ee0761c4769b26c91f408a2392637d24de3959a2113bf7b63987bb7b"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-templates = Jinja2Templates(directory="template")
+templates = Jinja2Templates(directory="ToDoApp/template")
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 

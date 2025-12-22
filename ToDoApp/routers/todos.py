@@ -8,7 +8,7 @@ from ToDoApp.routers.auth import get_current_user
 from fastapi.templating import Jinja2Templates
 
 router = APIRouter(prefix="/todos", tags=["todos"])
-templates = Jinja2Templates(directory="template")
+templates = Jinja2Templates(directory="ToDoApp/template")
 
 
 def get_db():

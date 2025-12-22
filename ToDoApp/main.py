@@ -19,7 +19,7 @@ app.add_middleware(
 models.Base.metadata.create_all(bind=engine)
 
 # ---------------- STATIC FILES ----------------
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="ToDoApp/static"), name="static")
 
 # ---------------- ROUTERS ----------------
 app.include_router(auth.router)
@@ -28,7 +28,7 @@ app.include_router(admin.router)
 app.include_router(users.router)
 
 # ---------------- TEMPLATES ----------------
-templates = Jinja2Templates(directory="template")
+templates = Jinja2Templates(directory="ToDoApp/template")
 
 # ---------------- ROOT (LANDING PAGE) ----------------
 @app.get("/")
