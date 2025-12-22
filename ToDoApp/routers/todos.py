@@ -5,7 +5,7 @@ from typing import Annotated
 from ToDoApp.database import SessionLocal
 from ToDoApp.models import ToDoItem
 from ToDoApp.routers.auth import get_current_user
-from ToDoApp.fastapi.templating import Jinja2Templates
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(prefix="/todos", tags=["todos"])
 templates = Jinja2Templates(directory="template")

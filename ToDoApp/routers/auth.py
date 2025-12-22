@@ -9,8 +9,8 @@ from ToDoApp.models import Users
 import ToDoApp.schemas
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
-from ToDoApp.fastapi.templating import Jinja2Templates
-from ToDoApp.passlib.exc import UnknownHashError
+from fastapi.templating import Jinja2Templates
+from passlib.exc import UnknownHashError
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
