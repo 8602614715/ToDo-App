@@ -4,9 +4,9 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from typing import Annotated
-from ToDoApp.database import SessionLocal
-from ToDoApp.models import Users
-import ToDoApp.schemas
+from database import SessionLocal
+from models import Users
+import schemas
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import jwt
 from fastapi.templating import Jinja2Templates

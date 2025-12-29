@@ -1,73 +1,154 @@
 {% include 'layout.html' %}
 
-<div class="container mt-4">
-    <div class="card text-center">
+<div class="container-fluid mt-4">
+  <div class="row">
 
-        <!-- HEADER -->
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Your To-Do List</span>
-
-            <div>
-                <span class="mr-3 text-muted">
-                    Hello, <strong>{{ user.username }}</strong>
-                </span>
-
-                <a href="/auth/logout" class="btn btn-outline-danger btn-sm">
-                    Logout
-                </a>
-            </div>
+    <!-- SIDEBAR -->
+    <div class="col-md-3">
+      <div class="card mb-3">
+        <div class="card-header">
+          Categories
         </div>
-
-        <!-- BODY -->
-        <div class="card-body">
-            <h5 class="card-title">List of Tasks</h5>
-            <p class="card-text">
-                Information about your tasks will be displayed here.
-            </p>
-
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Task</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for todo in todos %}
-                        {% if not todo.complete %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ todo.title }}</td>
-                            <td>
-                                <button
-                                    onclick="window.location.href='edit-todo-page/{{ todo.id }}'"
-                                    class="btn btn-info btn-sm">
-                                    Edit
-                                </button>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr class="alert alert-success">
-                            <td>{{ loop.index }}</td>
-                            <td class="strike-through-td">{{ todo.title }}</td>
-                            <td>
-                                <button
-                                    onclick="window.location.href='edit-todo-page/{{ todo.id }}'"
-                                    class="btn btn-info btn-sm">
-                                    Edit
-                                </button>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <a href="/todos/add-todo-page" class="btn btn-primary">
-                Add a Task
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">
+            <a href="/todos">All</a>
+          </li>
+          {% for category in categories %}
+          <li class="list-group-item">
+            <a href="/todos?category={{ category.id }}">
+              {{ category.name }}
             </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          Status
         </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><a href="/todos">All</a></li>
+          <li class="list-group-item"><a href="/todos?status=todo">Todo</a></li>
+          <li class="list-group-item"><a href="/todos?status=in_progress">In Progress</a></li>
+          <li class="list-group-item"><a href="/todos?status=completed">Completed</a></li>
+        </ul>
+      </div>
     </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="col-md-9">
+
+      <!-- HEADER -->
+      <div class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Your To-Do Dashboard</span>
+
+          <div>
+            <span class="text-muted mr-3">
+              Hello, <strong>{{ user.username }}</strong>
+            </span>
+            <a href="/auth/logout" class="btn btn-outline-danger btn-sm">
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="row text-center mb-3">
+        <div class="col-md-3">
+          <div class="card bg-light">
+            <div class="card-body">
+              <h6>Total</h6>
+              <h4>{{ stats.total }}</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-white">
+            <div class="card-body">
+              <h6>Todo</h6>
+              <h4>{{ stats.todo }}</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <h6>In Progress</h6>
+              <h4>{{ stats.in_progress }}</h4>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <h6>Completed</h6>
+              <h4>{{ stats.completed }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH + ADD -->
+      <div class="d-flex justify-content-between mb-3">
+        <form method="get" class="w-50">
+          <input
+            type="text"
+            name="search"
+            value="{{ request.args.get('search','') }}"
+            class="form-control"
+            placeholder="Search tasks..."
+          />
+        </form>
+
+        <a href="/todos/add-todo-page" class="btn btn-primary">
+          + New Task
+        </a>
+      </div>
+
+      <!-- TASK LIST -->
+      <div class="card">
+        <div class="card-body">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for todo in todos %}
+              <tr class="{% if todo.status == 'completed' %}table-success{% endif %}">
+                <td>{{ loop.index }}</td>
+                <td {% if todo.status == 'completed' %}class="text-decoration-line-through"{% endif %}>
+                  {{ todo.title }}
+                </td>
+                <td>{{ todo.status.replace('_',' ').title() }}</td>
+                <td>{{ todo.category.name if todo.category else '-' }}</td>
+                <td>
+                  <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm">
+                    Edit
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="5" class="text-center text-muted">
+                  No tasks found
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>

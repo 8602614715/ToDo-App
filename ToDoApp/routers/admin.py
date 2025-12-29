@@ -1,10 +1,10 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Path
-from ToDoApp import models
-from ToDoApp.database import engine, SessionLocal
+import models
+from database import engine, SessionLocal
 from sqlalchemy.orm import Session as session
-from ToDoApp.routers import auth
-from ToDoApp.routers.todos import get_db
+from routers import auth
+from routers.todos import get_db
 
 router = APIRouter(prefix='/admin', tags=['admin'])
 

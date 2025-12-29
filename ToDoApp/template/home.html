@@ -11,47 +11,265 @@
       rel="stylesheet"
     >
 
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', path='/css/base.css') }}">
+
+    <style>
+        :root {
+            --primary: #0066ff;
+            --secondary: #f8f9fa;
+            --accent: #26de81;
+            --dark-bg: #181c1f;
+            --dark-card: #23272b;
+            --dark-text: #f1f1f1;
+            --transition: .3s cubic-bezier(.4,2,.5,1);
+        }
+        body, html {
+            font-family: 'Poppins', sans-serif;
+            background: var(--secondary);
+            transition: background-color var(--transition), color var(--transition);
+            min-height: 100vh;
+        }
+        .dark-theme {
+            background: var(--dark-bg) !important;
+            color: var(--dark-text) !important;
+        }
+        .dark-theme .navbar, .dark-theme .footer {
+            background: var(--dark-card)!important;
+            color: var(--dark-text)!important;
+        }
+        .dark-theme .card, .dark-theme .form-control {
+            background: var(--dark-card)!important;
+            color: var(--dark-text)!important;
+            border-color: #444!important;
+        }
+        .dark-theme textarea.form-control,
+        .dark-theme input.form-control {
+            background: var(--dark-bg)!important;
+            color: var(--dark-text)!important;
+        }
+        .glass {
+            background: rgba(255,255,255,0.9);
+            border-radius: 2rem;
+            box-shadow: 0 8px 24px 0 rgba(60,80,170,0.10), 0 1.5px 2.8px rgba(0,0,0,0.04);
+            padding: 40px 40px 32px 40px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            max-width: 500px;
+            transition: background .3s;
+        }
+        .dark-theme .glass {
+            background: rgba(35,39,43, 0.82);
+            box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+        }
+        .hero-icon {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: .4rem;
+        }
+        .theme-toggle-btn {
+            border-radius: 50%;
+            padding: 0.1rem .7rem .1rem .7rem;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            font-size: 1.3rem;
+            margin-left: 17px;
+            cursor: pointer;
+            transition: background var(--transition);
+        }
+        .theme-toggle-btn:focus {
+            outline: none;
+        }
+        .btn-grad {
+            background: linear-gradient(90deg,var(--primary),#3294fa,var(--accent));
+            color: white!important;
+            border: none;
+            transition: filter var(--transition), transform var(--transition);
+            box-shadow: 0 4px 24px rgba(70,140,255, .13);
+        }
+        .btn-grad:hover {
+            filter: brightness(1.07);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .btn-outline-grad {
+            border: 2px solid var(--primary);
+            color: var(--primary)!important;
+            transition: background var(--transition), color var(--transition);
+        }
+        .btn-outline-grad:hover {
+            border-color: #3294fa;
+            color: #fff!important;
+            background: var(--primary);
+        }
+        .footer {
+            background: #191d21;
+            color: #bbb;
+            font-size: 1rem;
+        }
+        /* About and How it Works section custom */
+        .info-section {
+            background: rgba(255,255,255, .96);
+            border-radius: 1.3rem;
+            box-shadow: 0 4px 18px 0 rgba(60,80,170,0.08), 0 1.5px 2.8px rgba(0,0,0,0.04);
+            margin: 24px auto 28px auto;
+            padding: 36px 34px 28px 34px;
+            max-width: 760px;
+        }
+        .dark-theme .info-section {
+            background: rgba(35,39,43, 0.91);
+        }
+        /* Animations */
+        @keyframes fadeinup {
+            from { opacity: 0; transform: translateY(35px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .fadein-up {
+            opacity: 0; animation: fadeinup 1s .1s forwards;
+        }
+        .fadein-up.delay {
+            animation-delay: .2s !important;
+        }
+        /* Responsive center */
+        @media (max-width: 900px) {
+            .info-section { padding: 1.4rem 1.5rem; }
+        }
+        @media (max-width: 650px) {
+            .glass { padding: 1.5rem 1rem; margin-top: 16px;}
+            .info-section { padding: 1.1rem 0.7rem; }
+            .display-4 { font-size: 2.1rem;}
+            .btn-lg { padding: 0.7rem 1.1rem; }
+        }
+    </style>
+
+    <script>
+        // Theme toggle logic
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const body = document.body;
+            function setTheme(theme) {
+                if(theme === 'dark') {
+                    body.classList.add('dark-theme');
+                } else {
+                    body.classList.remove('dark-theme');
+                }
+            }
+            // On load
+            let theme = localStorage.getItem('theme');
+            if(!theme) {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            setTheme(theme);
+            // Button onclick
+            if(themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', function(){
+                    theme = body.classList.contains('dark-theme') ? 'light' : 'dark';
+                    setTheme(theme);
+                    localStorage.setItem('theme', theme);
+                });
+            }
+        });
+    </script>
 </head>
 
 <body class="bg-light">
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="/">TodoApp</a>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top shadow-sm">
+        <a class="navbar-brand font-weight-bold" href="/" style="letter-spacing:1px;font-size:1.5rem;">
+            <i class="fa-solid fa-list-check hero-icon"></i> TodoApp
+        </a>
+        <button type="button" class="ml-auto theme-toggle-btn" id="theme-toggle-btn" title="Toggle dark/light theme">
+            <i class="fas fa-moon" id="theme-toggle-icon"></i>
+        </button>
     </nav>
 
     <!-- HERO SECTION -->
-    <div class="container d-flex align-items-center justify-content-center" style="min-height: 90vh;">
-        <div class="text-center">
-
-            <h1 class="display-4 font-weight-bold">
-                Welcome to TodoApp
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+        <div class="glass fadein-up">
+            <span class="hero-icon mb-2 d-block"><i class="fa-solid fa-calendar-check"></i></span>
+            <h1 class="display-4 font-weight-bold mb-3">
+                Welcome to <span class="text-primary">TodoApp</span>
             </h1>
-
-            <p class="lead text-muted mt-3">
-                Manage your daily tasks efficiently.<br>
-                Simple, fast and secure task management.
+            <p class="lead text-secondary mt-2 mb-4">
+                <span style="font-size:1.2rem;">Manage your daily tasks with style &amp; ease.</span> <br>
+                <i class="fa-solid fa-check-double text-success"></i> Simple &nbsp; 
+                <i class="fa-solid fa-rocket text-info"></i> Fast &nbsp;
+                <i class="fa-solid fa-shield-halved text-warning"></i> Secure
             </p>
-
-            <div class="mt-4">
-                <a href="/auth/login-page" class="btn btn-primary btn-lg px-5 mr-2">
-                    Login
+            <div class="mt-4 d-flex justify-content-center">
+                <a href="/auth/login-page" class="btn btn-grad btn-lg px-5 mr-2 shadow-sm">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
                 </a>
-
-                <a href="/auth/register-page" class="btn btn-outline-secondary btn-lg px-5">
-                    Register
+                <a href="/auth/register-page" class="btn btn-outline-grad btn-lg px-5 ml-2">
+                    <i class="fa-regular fa-user"></i> Register
                 </a>
             </div>
-
+            <div class="mt-5 pt-3">
+                <h5 class="mb-3 text-secondary font-weight-bold"><i class="fa-solid fa-lightbulb text-warning"></i> Help Us Improve!</h5>
+                <p class="mb-2 text-muted">
+                    We'd love to hear your suggestions! <br>
+                    Share your feedback or feature requests:
+                </p>
+                <form action="mailto:team@todoapp.com" method="POST" enctype="text/plain" class="mx-auto fadein-up delay" style="max-width: 500px;">
+                    <div class="form-group mb-2">
+                        <textarea class="form-control" name="feedback" rows="3" required maxlength="360" placeholder="Your feedback... 😊"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="fa-solid fa-paper-plane"></i> Send Feedback
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="text-center text-muted py-3">
-        © 2025 TodoApp. All rights reserved.
+    <footer class="footer text-center text-muted py-3">
+        <span>© 2025 <strong>TodoApp</strong>. All rights reserved.</span>
+        <span class="ml-2">
+            <a href="https://github.com/" target="_blank" rel="noopener" style="color:inherit;" title="Visit our GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+        </span>
     </footer>
 
+    <script>
+    // Update theme icon
+    function updateThemeIcon() {
+        const btn = document.getElementById('theme-toggle-btn');
+        const icon = document.getElementById('theme-toggle-icon');
+        if(document.body.classList.contains('dark-theme')) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+            btn.style.background = '#ffd43b';
+            btn.style.color = '#333';
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+            btn.style.background = '#0066ff';
+            btn.style.color = '#fff';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Run once on DOM load
+        updateThemeIcon();
+
+        // Listen for theme toggle
+        const btn = document.getElementById('theme-toggle-btn');
+        btn.addEventListener('click', function() {
+            setTimeout(updateThemeIcon, 80);
+        });
+
+        // Update icon on load and on theme change
+        const observer = new MutationObserver(updateThemeIcon);
+        observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    });
+    </script>
 </body>
 </html>
