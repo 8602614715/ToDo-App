@@ -3,9 +3,9 @@ from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import models
-from database import engine
-from routers import auth, todos, admin, users
+from ToDoApp import models
+from ToDoApp.database import engine
+from ToDoApp.routers import auth, todos, admin, users
 
 app = FastAPI()
 
