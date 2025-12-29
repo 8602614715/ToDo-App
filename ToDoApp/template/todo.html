@@ -97,7 +97,7 @@
           <input
             type="text"
             name="search"
-            value="{{ request.args.get('search','') }}"
+            value="{{ request.query_params.get('search','') }}"
             class="form-control"
             placeholder="Search tasks..."
           />

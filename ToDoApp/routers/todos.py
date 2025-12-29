@@ -25,25 +25,35 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 # ---------------- PAGES ----------------
 @router.get("/todo-page")
 async def todo_page(request: Request, db: db_dependency, user: user_dependency):
-    todos = db.query(ToDoItem)\
-        .filter(ToDoItem.owner_id == user["user_id"])\
+    todos = (
+        db.query(ToDoItem)
+        .filter(ToDoItem.owner_id == user["user_id"])
         .all()
+    )
+
+    total = len(todos)
+    completed_count = len([t for t in todos if t.complete])
+    todo_count = len([t for t in todos if not t.complete])
+    in_progress_count = 0  # only if you actually support this state
+
+    categories = []  # or fetch from DB if you have Category model
 
     return templates.TemplateResponse(
-    "todo.html",
-    {
-        "request": request,
-        "user": user,
-        "todos": todos,
-        "categories": categories,
-        "stats": {
-            "total": total,
-            "todo": todo_count,
-            "in_progress": in_progress_count,
-            "completed": completed_count
-        }
-    }
-)
+        "todo.html",
+        {
+            "request": request,
+            "user": user,
+            "todos": todos,
+            "categories": categories,
+            "stats": {
+                "total": total,
+                "todo": todo_count,
+                "in_progress": in_progress_count,
+                "completed": completed_count,
+            },
+        },
+    )
+
 
 
 
