@@ -1,7 +1,8 @@
-import datetime
-from sqlalchemy.types import DateTime
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
 from ToDoApp.database import Base
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+
 
 class Users(Base):
     __tablename__ = "users"
@@ -12,23 +13,36 @@ class Users(Base):
     first_name = Column(String(100))
     last_name = Column(String(100))
     role = Column(String(50))
-    hashed_password = Column(String(255))  # ✅ store hashed password here
+    hashed_password = Column(String(255))
     is_active = Column(Boolean, default=True)
-    
-class ToDoItem(Base):
-    __tablename__ ="todo_items"
 
-    id = Column (Integer, primary_key=True, index=True)
-    title = Column(String(100), index=True, nullable=False)
+    # relationship
+    todos = relationship("ToDoItem", back_populates="owner")
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100), unique=True, nullable=False)
+
+    todos = relationship("ToDoItem", back_populates="category")
+class ToDoItem(Base):
+    __tablename__ = "todo_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(100), nullable=False, index=True)
     description = Column(String(255))
     priority = Column(Integer, nullable=False)
-    complete = Column(Boolean, default=False)
-    owner_id = Column(Integer, ForeignKey("users.id"))
-    status = Column(String(50), default="todo")
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now)
-    category_id = Column(Integer, ForeignKey("categories.id"))
-    
 
+    # SINGLE source of truth
+    status = Column(String(50), default="todo", nullable=False)
+    # todo | in_progress | completed
 
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # relationships
+    owner = relationship("Users", back_populates="todos")
+    category = relationship("Category", back_populates="todos")
