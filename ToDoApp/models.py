@@ -1,3 +1,5 @@
+import datetime
+from sqlalchemy.types import DateTime
 from ToDoApp.database import Base
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 
@@ -22,6 +24,11 @@ class ToDoItem(Base):
     priority = Column(Integer, nullable=False)
     complete = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    status = Column(String(50), default="todo")
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now)
+    category_id = Column(Integer, ForeignKey("categories.id"))
+    
 
 
 
