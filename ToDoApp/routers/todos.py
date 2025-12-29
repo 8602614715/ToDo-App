@@ -30,9 +30,21 @@ async def todo_page(request: Request, db: db_dependency, user: user_dependency):
         .all()
 
     return templates.TemplateResponse(
-        "todo.html",
-        {"request": request, "todos": todos, "user": user}
-    )
+    "todo.html",
+    {
+        "request": request,
+        "user": user,
+        "todos": todos,
+        "categories": categories,
+        "stats": {
+            "total": total,
+            "todo": todo_count,
+            "in_progress": in_progress_count,
+            "completed": completed_count
+        }
+    }
+)
+
 
 
 @router.get("/add-todo-page")
