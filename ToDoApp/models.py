@@ -18,6 +18,7 @@ class Users(Base):
 
     # relationship
     todos = relationship("ToDoItem", back_populates="owner")
+
 class Category(Base):
     __tablename__ = "categories"
 
@@ -25,6 +26,7 @@ class Category(Base):
     name = Column(String(100), unique=True, nullable=False)
 
     todos = relationship("ToDoItem", back_populates="category")
+    
 class ToDoItem(Base):
     __tablename__ = "todo_items"
 
