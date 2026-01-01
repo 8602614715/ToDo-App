@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from fastapi import FastAPI, Request, status
 from starlette.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
@@ -16,10 +18,16 @@ app.add_middleware(
 )
 
 # ---------------- DATABASE ----------------
-models.Base.metadata.create_all(bind=engine)
+try:
+    models.Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(f"Warning: Could not create database tables: {e}")
 
 # ---------------- STATIC FILES ----------------
-app.mount("/static", StaticFiles(directory="ToDoApp/static"), name="static")
+# Use absolute path for static files (works on Render)
+BASE_DIR = Path(__file__).parent
+static_dir = BASE_DIR / "static"
+app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # ---------------- ROUTERS ----------------
 app.include_router(auth.router)
@@ -28,7 +36,9 @@ app.include_router(admin.router)
 app.include_router(users.router)
 
 # ---------------- TEMPLATES ----------------
-templates = Jinja2Templates(directory="ToDoApp/template")
+# Use absolute path for templates (works on Render)
+template_dir = BASE_DIR / "template"
+templates = Jinja2Templates(directory=str(template_dir))
 
 # ---------------- ROOT (LANDING PAGE) ----------------
 @app.get("/")
