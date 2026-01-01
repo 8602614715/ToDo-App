@@ -132,9 +132,9 @@
                 <td>{{ todo.status.replace('_',' ').title() }}</td>
                 <td>{{ todo.category.name if todo.category else '-' }}</td>
                 <td>
-                  <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm">
+                  <button href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm">
                     Edit
-                  </a>
+                  </button>
                 </td>
               </tr>
               {% else %}
