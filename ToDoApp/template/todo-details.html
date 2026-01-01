@@ -1,0 +1,164 @@
+{% include 'layout.html' %}
+
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4>Task Details</h4>
+      <div>
+        <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-primary btn-sm">✎ Edit</a>
+        <a href="/todos/todo-page" class="btn btn-secondary btn-sm">← Back to List</a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-8">
+          <h2 class="mb-3 {% if todo.status == 'completed' %}text-decoration-line-through text-muted{% endif %}">
+            {{ todo.title }}
+          </h2>
+          
+          {% if todo.description %}
+          <div class="mb-4">
+            <h5>Description</h5>
+            <p class="text-muted" style="white-space: pre-wrap;">{{ todo.description }}</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title">Quick Actions</h6>
+              <form method="post" action="/todos/todo/{{ todo.id }}/toggle-complete" class="mb-2">
+                <button type="submit" class="btn btn-sm w-100 {% if todo.status == 'completed' %}btn-warning{% else %}btn-success{% endif %}">
+                  {% if todo.status == 'completed' %}↩ Mark as Incomplete{% else %}✓ Mark as Complete{% endif %}
+                </button>
+              </form>
+              <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm w-100 mb-2">✎ Edit Task</a>
+              <form method="post" action="/todos/todo/{{ todo.id }}/delete" onsubmit="return confirm('Delete this task?')">
+                <button type="submit" class="btn btn-danger btn-sm w-100">🗑️ Delete</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th width="40%">Status</th>
+                <td>
+                  <span class="badge 
+                    {% if todo.status == 'completed' %}badge-success
+                    {% elif todo.status == 'progress' %}badge-info
+                    {% else %}badge-warning{% endif %} badge-lg">
+                    {{ todo.status.replace('_',' ').title() }}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Priority</th>
+                <td>
+                  {% if todo.priority == 1 %}
+                  <span class="badge badge-danger badge-lg">🔴 High</span>
+                  {% elif todo.priority == 2 %}
+                  <span class="badge badge-warning badge-lg">🟡 Medium</span>
+                  {% else %}
+                  <span class="badge badge-secondary badge-lg">⚪ Low</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Category</th>
+                <td>
+                  {% if todo.category %}
+                  <span class="badge badge-primary">{{ todo.category.name }}</span>
+                  {% else %}
+                  <span class="text-muted">No category</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Due Date</th>
+                <td>
+                  {% if todo.due_date %}
+                    {% set days_diff = (todo.due_date - today).days %}
+                    {% if days_diff < 0 %}
+                    <span class="text-danger"><strong>{{ todo.due_date.strftime('%B %d, %Y') }}</strong> 
+                      <span class="badge badge-danger">OVERDUE</span></span>
+                    {% elif days_diff <= 3 %}
+                    <span class="text-warning"><strong>{{ todo.due_date.strftime('%B %d, %Y') }}</strong> 
+                      <span class="badge badge-warning">Due Soon</span></span>
+                    {% else %}
+                    {{ todo.due_date.strftime('%B %d, %Y') }}
+                    {% endif %}
+                  {% else %}
+                  <span class="text-muted">No due date set</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Tags</th>
+                <td>
+                  {% if todo.tags %}
+                  {% for tag in todo.tags.split(',') %}
+                  <span class="badge badge-light mr-1">{{ tag.strip() }}</span>
+                  {% endfor %}
+                  {% else %}
+                  <span class="text-muted">No tags</span>
+                  {% endif %}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="col-md-6">
+          <table class="table table-bordered">
+            <tbody>
+              <tr>
+                <th width="40%">Created</th>
+                <td>
+                  {% if todo.created_at %}
+                  {{ todo.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                  <br><small class="text-muted">{{ (today - todo.created_at.date()).days }} days ago</small>
+                  {% else %}
+                  <span class="text-muted">Unknown</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Last Updated</th>
+                <td>
+                  {% if todo.updated_at %}
+                  {{ todo.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+                  {% if todo.updated_at != todo.created_at %}
+                  <br><small class="text-muted">{{ (today - todo.updated_at.date()).days }} days ago</small>
+                  {% endif %}
+                  {% else %}
+                  <span class="text-muted">Never</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <th>Task ID</th>
+                <td><code>#{{ todo.id }}</code></td>
+              </tr>
+              <tr>
+                <th>Owner</th>
+                <td>{{ todo.owner.username if todo.owner else 'Unknown' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.badge-lg {
+  font-size: 1em;
+  padding: 0.5em 0.75em;
+}
+</style>
+

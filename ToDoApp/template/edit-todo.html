@@ -3,50 +3,103 @@
 <div class="container">
   <div class="card">
     <div class="card-header">
-      Let's edit your todo!
+      <h4>Edit To-Do</h4>
     </div>
 
     <div class="card-body">
-
-      <form action="/todos/todo/{{ todo.id }}/update" method="post">
-
-        <div class="form-group mb-2">
-          <label>Title</label>
-          <input type="text" name="title" class="form-control" value="{{ todo.title }}" required>
+      <form action="/todos/todo/{{ todo.id }}/update" method="post" onsubmit="disableBtn(this)">
+        <div class="form-group">
+          <label>Title <span class="text-danger">*</span></label>
+          <input type="text" name="title" class="form-control" value="{{ todo.title }}" required minlength="3" maxlength="100">
         </div>
 
-        <div class="form-group mb-2">
+        <div class="form-group">
           <label>Description</label>
-          <textarea name="description" class="form-control" required>{{ todo.description }}</textarea>
+          <textarea name="description" class="form-control" rows="4">{{ todo.description or '' }}</textarea>
         </div>
 
-        <div class="form-group mb-2">
-          <label>Priority</label>
-          <select name="priority" class="form-control">
-            {% for i in range(1,6) %}
-              <option value="{{ i }}" {% if todo.priority == i %}selected{% endif %}>{{ i }}</option>
-            {% endfor %}
-          </select>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Priority <span class="text-danger">*</span></label>
+              <select name="priority" class="form-control" required>
+                <option value="1" {% if todo.priority == 1 %}selected{% endif %}>🔴 High</option>
+                <option value="2" {% if todo.priority == 2 %}selected{% endif %}>🟡 Medium</option>
+                <option value="3" {% if todo.priority == 3 %}selected{% endif %}>⚪ Low</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Status</label>
+              <select name="todo_status" class="form-control">
+                <option value="pending" {% if todo.status == "pending" %}selected{% endif %}>📝 Pending</option>
+                <option value="progress" {% if todo.status == "progress" %}selected{% endif %}>🔄 Progress</option>
+                <option value="completed" {% if todo.status == "completed" %}selected{% endif %}>✅ Completed</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="form-group mb-3">
-          <label>Status</label>
-          <select name="todo_status" class="form-control">
-            <option value="pending" {% if todo.status == "pending" %}selected{% endif %}>Pending</option>
-            <option value="in_progress" {% if todo.status == "in_progress" %}selected{% endif %}>In Progress</option>
-            <option value="completed" {% if todo.status == "completed" %}selected{% endif %}>Completed</option>
-          </select>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Category</label>
+              <select name="category_id" class="form-control">
+                <option value="">No Category</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}" {% if todo.category_id == category.id %}selected{% endif %}>
+                  {{ category.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" name="due_date" class="form-control" 
+                     value="{% if todo.due_date %}{{ todo.due_date.strftime('%Y-%m-%d') }}{% endif %}">
+            </div>
+          </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <a href="/todos/todo-page" class="btn btn-success ms-2">Back</a>
+        <div class="form-group">
+          <label>Tags</label>
+          <input type="text" name="tags" class="form-control" 
+                 value="{% if todo.tags %}{{ todo.tags }}{% endif %}" 
+                 placeholder="tag1, tag2, tag3 (comma-separated)">
+          <small class="form-text text-muted">Separate multiple tags with commas</small>
+        </div>
 
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">
+            💾 Save Changes
+          </button>
+          <a href="/todos/todo-page" class="btn btn-secondary">
+            Cancel
+          </a>
+          <a href="/todos/todo-details/{{ todo.id }}" class="btn btn-info">
+            View Details
+          </a>
+        </div>
+
+        <script>
+          function disableBtn(form) {
+            const btn = form.querySelector("button[type='submit']");
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+          }
+        </script>
       </form>
 
-      <form action="/todos/todo/{{ todo.id }}/delete" method="post" class="mt-2">
-        <button type="submit" class="btn btn-danger">Delete</button>
+      <hr>
+      
+      <form action="/todos/todo/{{ todo.id }}/delete" method="post" onsubmit="return confirm('Are you sure you want to delete this task? This action cannot be undone.');">
+        <button type="submit" class="btn btn-danger">
+          🗑️ Delete Task
+        </button>
       </form>
-
     </div>
   </div>
 </div>

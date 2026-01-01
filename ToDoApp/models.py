@@ -1,5 +1,5 @@
-from datetime import datetime
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from datetime import datetime, date
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Date, Text
 from sqlalchemy.orm import relationship
 from ToDoApp.database import Base
 
@@ -32,15 +32,19 @@ class ToDoItem(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(100), nullable=False, index=True)
-    description = Column(String(255))
-    priority = Column(Integer, nullable=False)
+    description = Column(Text)  # Changed to Text for longer descriptions
+    priority = Column(Integer, nullable=False, default=3)  # 1=High, 2=Medium, 3=Low
 
     # SINGLE source of truth
-    status = Column(String(50), default="todo", nullable=False)
-    # todo | in_progress | completed
+    status = Column(String(50), default="pending", nullable=False)
+    # pending | progress | completed
 
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    
+    # New fields
+    due_date = Column(Date, nullable=True)
+    tags = Column(String(255), nullable=True)  # Comma-separated tags
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

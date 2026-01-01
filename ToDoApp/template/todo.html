@@ -6,51 +6,97 @@
     <!-- SIDEBAR -->
     <div class="col-md-3">
       <div class="card mb-3">
-        <div class="card-header">
-          Categories
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Categories</span>
+          <button class="btn btn-sm btn-outline-primary" data-toggle="modal" data-target="#addCategoryModal">
+            + Add
+          </button>
         </div>
         <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            <a href="/todos">All</a>
+          <li class="list-group-item {% if not filters.category_id %}active{% endif %}">
+            <a href="/todos/todo-page?{{ request.query_params|urlencode|replace('category_id=', '')|replace('&category_id=', '') }}">
+              All Categories
+            </a>
           </li>
           {% for category in categories %}
-          <li class="list-group-item">
-            <a href="/todos?category={{ category.id }}">
-              {{ category.name }}
-            </a>
+          <li class="list-group-item {% if filters.category_id == category.id %}active{% endif %}">
+            <div class="d-flex justify-content-between align-items-center">
+              <a href="/todos/todo-page?category_id={{ category.id }}&{{ request.query_params|urlencode|replace('category_id=' ~ filters.category_id, '') }}">
+                {{ category.name }}
+              </a>
+              <form method="post" action="/todos/category/{{ category.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this category?')">
+                <button type="submit" class="btn btn-sm btn-link text-danger p-0" style="font-size: 0.8em;">×</button>
+              </form>
+            </div>
           </li>
           {% endfor %}
         </ul>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          Status
-        </div>
+      <div class="card mb-3">
+        <div class="card-header">Status Filter</div>
         <ul class="list-group list-group-flush">
-          <li class="list-group-item"><a href="/todos">All</a></li>
-          <li class="list-group-item"><a href="/todos?status=todo">Todo</a></li>
-          <li class="list-group-item"><a href="/todos?status=in_progress">In Progress</a></li>
-          <li class="list-group-item"><a href="/todos?status=completed">Completed</a></li>
+          <li class="list-group-item {% if not filters.status %}active{% endif %}">
+            <a href="/todos/todo-page?{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+              All Status
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.status == 'pending' %}active{% endif %}">
+            <a href="/todos/todo-page?status=pending&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+              Pending
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.status == 'progress' %}active{% endif %}">
+            <a href="/todos/todo-page?status=progress&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+              Progress
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.status == 'completed' %}active{% endif %}">
+            <a href="/todos/todo-page?status=completed&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+              Completed
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Priority Filter</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item {% if not filters.priority %}active{% endif %}">
+            <a href="/todos/todo-page?{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+              All Priorities
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.priority == 1 %}active{% endif %}">
+            <a href="/todos/todo-page?priority=1&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+              <span class="badge badge-danger">High</span>
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.priority == 2 %}active{% endif %}">
+            <a href="/todos/todo-page?priority=2&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+              <span class="badge badge-warning">Medium</span>
+            </a>
+          </li>
+          <li class="list-group-item {% if filters.priority == 3 %}active{% endif %}">
+            <a href="/todos/todo-page?priority=3&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+              <span class="badge badge-secondary">Low</span>
+            </a>
+          </li>
         </ul>
       </div>
     </div>
 
     <!-- MAIN CONTENT -->
     <div class="col-md-9">
-
       <!-- HEADER -->
       <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span>Your To-Do Dashboard</span>
-
           <div>
-            <span class="text-muted mr-3">
-              Hello, <strong>{{ user.username }}</strong>
-            </span>
-            <a href="/auth/logout" class="btn btn-outline-danger btn-sm">
-              Logout
-            </a>
+            <a href="/todos/export?format=csv" class="btn btn-sm btn-outline-success mr-2">Export CSV</a>
+            <a href="/todos/export?format=json" class="btn btn-sm btn-outline-info mr-2">Export JSON</a>
+            <span class="text-muted mr-3">Hello, <strong>{{ user.username }}</strong></span>
+            <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
           </div>
         </div>
       </div>
@@ -68,16 +114,16 @@
         <div class="col-md-3">
           <div class="card bg-warning text-white">
             <div class="card-body">
-              <h6>Todo</h6>
-              <h4>{{ stats.todo }}</h4>
+              <h6>Pending</h6>
+              <h4>{{ stats.pending }}</h4>
             </div>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card bg-info text-white">
             <div class="card-body">
-              <h6>In Progress</h6>
-              <h4>{{ stats.in_progress }}</h4>
+              <h6>Progress</h6>
+              <h4>{{ stats.progress }}</h4>
             </div>
           </div>
         </div>
@@ -91,21 +137,52 @@
         </div>
       </div>
 
-      <!-- SEARCH + ADD -->
-      <div class="d-flex justify-content-between mb-3">
-        <form method="get" class="w-50">
-          <input
-            type="text"
-            name="search"
-            value="{{ request.query_params.get('search','') }}"
-            class="form-control"
-            placeholder="Search tasks..."
-          />
-        </form>
-
-        <a href="/todos/add-todo-page" class="btn btn-primary">
-          + New Task
-        </a>
+      <!-- SEARCH + FILTERS + SORT -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <form method="get" class="row">
+            <div class="col-md-4">
+              <input
+                type="text"
+                name="search"
+                value="{{ filters.search }}"
+                class="form-control"
+                placeholder="Search tasks..."
+              />
+            </div>
+            <div class="col-md-3">
+              <select name="sort_by" class="form-control">
+                <option value="created_at" {% if filters.sort_by == 'created_at' %}selected{% endif %}>Sort by Date</option>
+                <option value="title" {% if filters.sort_by == 'title' %}selected{% endif %}>Sort by Title</option>
+                <option value="priority" {% if filters.sort_by == 'priority' %}selected{% endif %}>Sort by Priority</option>
+                <option value="due_date" {% if filters.sort_by == 'due_date' %}selected{% endif %}>Sort by Due Date</option>
+                <option value="status" {% if filters.sort_by == 'status' %}selected{% endif %}>Sort by Status</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <select name="sort_order" class="form-control">
+                <option value="desc" {% if filters.sort_order == 'desc' %}selected{% endif %}>Descending</option>
+                <option value="asc" {% if filters.sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary w-100">Apply</button>
+            </div>
+            <div class="col-md-1">
+              <a href="/todos/add-todo-page" class="btn btn-success w-100">+ Add</a>
+            </div>
+            <!-- Preserve existing filters -->
+            {% if filters.status %}
+            <input type="hidden" name="status" value="{{ filters.status }}">
+            {% endif %}
+            {% if filters.category_id %}
+            <input type="hidden" name="category_id" value="{{ filters.category_id }}">
+            {% endif %}
+            {% if filters.priority %}
+            <input type="hidden" name="priority" value="{{ filters.priority }}">
+            {% endif %}
+          </form>
+        </div>
       </div>
 
       <!-- TASK LIST -->
@@ -116,31 +193,92 @@
               <tr>
                 <th>#</th>
                 <th>Title</th>
+                <th>Priority</th>
                 <th>Status</th>
                 <th>Category</th>
+                <th>Due Date</th>
+                <th>Tags</th>
                 <th>Actions</th>
               </tr>
             </thead>
-
             <tbody>
               {% for todo in todos %}
-              <tr class="{% if todo.status == 'completed' %}table-success{% endif %}">
-                <td>{{ loop.index }}</td>
-                <td {% if todo.status == 'completed' %}class="text-decoration-line-through"{% endif %}>
-                  {{ todo.title }}
-                </td>
-                <td>{{ todo.status.replace('_',' ').title() }}</td>
-                <td>{{ todo.category.name if todo.category else '-' }}</td>
+              <tr class="{% if todo.status == 'completed' %}table-success{% elif todo.due_date and todo.due_date < today %}table-danger{% endif %}">
+                <td>{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
                 <td>
-                  <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm">
-                    Edit
-                  </a>
+                  {% if todo.status == 'completed' %}<s>{% endif %}
+                  <a href="/todos/todo-details/{{ todo.id }}">{{ todo.title }}</a>
+                  {% if todo.status == 'completed' %}</s>{% endif %}
+                  {% if todo.description %}
+                  <br><small class="text-muted">{{ todo.description[:50] }}{% if todo.description|length > 50 %}...{% endif %}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if todo.priority == 1 %}
+                  <span class="badge badge-danger">High</span>
+                  {% elif todo.priority == 2 %}
+                  <span class="badge badge-warning">Medium</span>
+                  {% else %}
+                  <span class="badge badge-secondary">Low</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge 
+                    {% if todo.status == 'completed' %}badge-success
+                    {% elif todo.status == 'progress' %}badge-info
+                    {% else %}badge-warning{% endif %}">
+                    {{ todo.status.replace('_',' ').title() }}
+                  </span>
+                </td>
+                <td>
+                  {% if todo.category %}
+                  <span class="badge badge-primary">{{ todo.category.name }}</span>
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if todo.due_date %}
+                    {% set days_diff = (todo.due_date - today).days %}
+                    {% if days_diff < 0 %}
+                    <span class="text-danger"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Overdue)</span>
+                    {% elif days_diff <= 3 %}
+                    <span class="text-warning"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Soon)</span>
+                    {% else %}
+                    {{ todo.due_date.strftime('%Y-%m-%d') }}
+                    {% endif %}
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if todo.tags %}
+                  {% for tag in todo.tags.split(',') %}
+                  <span class="badge badge-light">{{ tag.strip() }}</span>
+                  {% endfor %}
+                  {% else %}
+                  <span class="text-muted">-</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <form method="post" action="/todos/todo/{{ todo.id }}/toggle-complete" style="display:inline;">
+                      <button type="submit" class="btn btn-sm {% if todo.status == 'completed' %}btn-warning{% else %}btn-success{% endif %}" title="Toggle Complete">
+                        {% if todo.status == 'completed' %}↩{% else %}✓{% endif %}
+                      </button>
+                    </form>
+                    <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm" title="Edit">✎</a>
+                    <a href="/todos/todo-details/{{ todo.id }}" class="btn btn-secondary btn-sm" title="View Details">👁</a>
+                    <form method="post" action="/todos/todo/{{ todo.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this task?')">
+                      <button type="submit" class="btn btn-danger btn-sm" title="Delete">×</button>
+                    </form>
+                  </div>
                 </td>
               </tr>
               {% else %}
               <tr>
-                <td colspan="5" class="text-center text-muted">
-                  No tasks found
+                <td colspan="8" class="text-center text-muted">
+                  No tasks found. <a href="/todos/add-todo-page">Create your first task!</a>
                 </td>
               </tr>
               {% endfor %}
@@ -149,6 +287,57 @@
         </div>
       </div>
 
+      <!-- PAGINATION -->
+      {% if pagination.total_pages > 1 %}
+      <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+          <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="/todos/todo-page?page={{ pagination.page - 1 }}&{{ request.query_params|urlencode }}">Previous</a>
+          </li>
+          {% for page_num in range(1, pagination.total_pages + 1) %}
+          <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+            <a class="page-link" href="/todos/todo-page?page={{ page_num }}&{{ request.query_params|urlencode }}">{{ page_num }}</a>
+          </li>
+          {% endfor %}
+          <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="/todos/todo-page?page={{ pagination.page + 1 }}&{{ request.query_params|urlencode }}">Next</a>
+          </li>
+        </ul>
+      </nav>
+      {% endif %}
     </div>
   </div>
 </div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Category</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <form method="post" action="/todos/category">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="categoryName">Category Name</label>
+            <input type="text" class="form-control" id="categoryName" name="name" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Helper function for Jinja2 template (if needed)
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+</script>
