@@ -47,15 +47,18 @@
           </select>
         </div>
 
-        <div class="form-group form-check">
-          <input
-            type="checkbox"
-            class="form-check-input"
-            name="complete"
-            {% if todo.complete %}checked{% endif %}
-          >
-          <label class="form-check-label">Complete</label>
+        <div class="form-group">
+          <label>Status</label>
+          <select name="status" class="form-control">
+            <option value="todo" {% if todo.status == "todo" %}selected{% endif %}>
+              To Do
+            </option>
+            <option value="completed" {% if todo.status == "completed" %}selected{% endif %}>
+              Completed
+            </option>
+          </select>
         </div>
+        
 
         <!-- BUTTON ROW -->
         <div class="mt-3">

@@ -32,8 +32,9 @@ async def todo_page(request: Request, db: db_dependency, user: user_dependency):
     )
 
     total = len(todos)
-    completed_count = len([t for t in todos if t.complete])
-    todo_count = len([t for t in todos if not t.complete])
+    completed_count = len([t for t in todos if t.status == "completed"])
+    todo_count = len([t for t in todos if t.status == "todo"])
+
     in_progress_count = 0  # only if you actually support this state
 
     categories = []  # or fetch from DB if you have Category model
@@ -113,7 +114,7 @@ async def update_todo(
     title: str = Form(...),
     description: str = Form(...),
     priority: int = Form(...),
-    complete: bool = Form(False)
+    status: str = Form("todo")
 ):
     todo = db.query(ToDoItem)\
         .filter(ToDoItem.id == todo_id)\
@@ -126,7 +127,7 @@ async def update_todo(
     todo.title = title
     todo.description = description
     todo.priority = priority
-    todo.complete = complete
+    todo.status = status
 
     db.commit()
 
@@ -134,7 +135,6 @@ async def update_todo(
         url="/todos/todo-page",
         status_code=status.HTTP_302_FOUND
     )
-
 
 @router.post("/todo/{todo_id}/delete")
 async def delete_todo(
