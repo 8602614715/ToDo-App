@@ -114,7 +114,7 @@ async def update_todo(
     title: str = Form(...),
     description: str = Form(...),
     priority: int = Form(...),
-    status: str = Form("todo")
+    todo_status: str = Form("todo")
 ):
     todo = db.query(ToDoItem)\
         .filter(ToDoItem.id == todo_id)\
@@ -127,7 +127,7 @@ async def update_todo(
     todo.title = title
     todo.description = description
     todo.priority = priority
-    todo.status = status
+    todo.status = todo_status
 
     db.commit()
 
@@ -135,6 +135,7 @@ async def update_todo(
         url="/todos/todo-page",
         status_code=status.HTTP_302_FOUND
     )
+
 
 @router.post("/todo/{todo_id}/delete")
 async def delete_todo(
