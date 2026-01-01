@@ -34,8 +34,8 @@ async def todo_page(request: Request, db: db_dependency, user: user_dependency):
     total = len(todos)
     completed_count = len([t for t in todos if t.status == "completed"])
     todo_count = len([t for t in todos if t.status == "todo"])
-
-    in_progress_count = 0  # only if you actually support this state
+    pending_count = len([t for t in todos if t.status == "pending"])
+    in_progress_count = len([t for t in todos if t.status == "in_progress"])
 
     categories = []  # or fetch from DB if you have Category model
 
@@ -115,7 +115,7 @@ async def update_todo(
     description: str = Form(...),
     priority: int = Form(...),
     todo_status: str = Form("todo")
-):
+    ):
     todo = db.query(ToDoItem)\
         .filter(ToDoItem.id == todo_id)\
         .filter(ToDoItem.owner_id == user["user_id"])\
