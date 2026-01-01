@@ -18,10 +18,47 @@ app.add_middleware(
 )
 
 # ---------------- DATABASE ----------------
-try:
-    models.Base.metadata.create_all(bind=engine)
-except Exception as e:
-    print(f"Warning: Could not create database tables: {e}")
+def init_db():
+    """Initialize database: create tables and add missing columns"""
+    try:
+        # Create all tables (for new databases)
+        models.Base.metadata.create_all(bind=engine)
+        
+        # Add missing columns to existing tables (for Render deployments)
+        from sqlalchemy import text, inspect
+        inspector = inspect(engine)
+        
+        # Check if todo_items table exists and add missing columns
+        if inspector.has_table("todo_items"):
+            with engine.begin() as conn:  # Use begin() for automatic transaction management
+                # Get current columns
+                columns = [col['name'] for col in inspector.get_columns("todo_items")]
+                
+                # Check and add status column if missing
+                if 'status' not in columns:
+                    # Add column with default first, then set NOT NULL (safer for existing rows)
+                    conn.execute(text("ALTER TABLE todo_items ADD COLUMN status VARCHAR(50) DEFAULT 'todo'"))
+                    conn.execute(text("ALTER TABLE todo_items ALTER COLUMN status SET NOT NULL"))
+                    print("Added 'status' column to todo_items table")
+                
+                # Check and add created_at column if missing
+                if 'created_at' not in columns:
+                    conn.execute(text("ALTER TABLE todo_items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+                    print("Added 'created_at' column to todo_items table")
+                
+                # Check and add updated_at column if missing
+                if 'updated_at' not in columns:
+                    conn.execute(text("ALTER TABLE todo_items ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+                    print("Added 'updated_at' column to todo_items table")
+                
+                # Check and add category_id column if missing
+                if 'category_id' not in columns:
+                    conn.execute(text("ALTER TABLE todo_items ADD COLUMN category_id INTEGER"))
+                    print("Added 'category_id' column to todo_items table")
+    except Exception as e:
+        print(f"Warning: Could not initialize database: {e}")
+
+init_db()
 
 # ---------------- STATIC FILES ----------------
 # Use absolute path for static files (works on Render)
