@@ -31,8 +31,9 @@
 
         <div class="form-group mb-3">
           <label>Status</label>
-          <select name="status" class="form-control">
+          <select name="todo_status" class="form-control">
             <option value="todo" {% if todo.status == "todo" %}selected{% endif %}>Todo</option>
+            <option value="in_progress" {% if todo.status == "in_progress" %}selected{% endif %}>In Progress</option>
             <option value="completed" {% if todo.status == "completed" %}selected{% endif %}>Completed</option>
           </select>
         </div>
