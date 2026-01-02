@@ -620,6 +620,59 @@ a:hover {
   background: var(--primary-dark);
 }
 
+/* ============================================
+   LOGIN PAGE (SCOPED)
+   ============================================ */
+
+   .login-card {
+    animation: fadeInUp 0.4s ease;
+  }
+  
+  .login-card .card-header h5 {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .login-card .form-control {
+    font-size: 0.95rem;
+  }
+  
+  .login-card .btn {
+    justify-content: center;
+  }
+  
+  /* Subtle entrance */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* ============================================
+   REGISTER PAGE (SCOPED)
+   ============================================ */
+
+.register-card {
+  animation: fadeInUp 0.4s ease;
+}
+
+.register-card .card-header h5 {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.register-card .form-control {
+  font-size: 0.95rem;
+}
+
+.register-card .btn {
+  justify-content: center;
+}
 
 
 
