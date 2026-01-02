@@ -173,107 +173,107 @@
             {% endif %}
           </form>
         </div>
-      </div>
-
-      <!-- TASK LIST -->
-      <div class="card shadow-lg">
-        <div class="card-body p-0">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Title</th>
-                <th>Priority</th>
-                <th>Status</th>
-                <th>Category</th>
-                <th>Due Date</th>
-                <th>Tags</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for todo in todos %}
-              <tr class="{% if todo.status == 'completed' %}table-success{% elif todo.due_date and todo.due_date < today %}table-danger{% endif %}">
-                <td>{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
-                <td>
-                  {% if todo.status == 'completed' %}<s>{% endif %}
-                  <a href="/todos/todo-details/{{ todo.id }}">{{ todo.title }}</a>
-                  {% if todo.status == 'completed' %}</s>{% endif %}
-                  {% if todo.description %}
-                  <br><small class="text-muted">{{ todo.description[:50] }}{% if todo.description|length > 50 %}...{% endif %}</small>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if todo.priority == 1 %}
-                  <span class="badge badge-danger">High</span>
-                  {% elif todo.priority == 2 %}
-                  <span class="badge badge-warning">Medium</span>
-                  {% else %}
-                  <span class="badge badge-secondary">Low</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <span class="badge 
-                    {% if todo.status == 'completed' %}badge-success
-                    {% elif todo.status == 'progress' %}badge-info
-                    {% else %}badge-warning{% endif %}">
-                    {{ todo.status.replace('_',' ').title() }}
-                  </span>
-                </td>
-                <td>
-                  {% if todo.category %}
-                  <span class="badge badge-primary">{{ todo.category.name }}</span>
-                  {% else %}
-                  <span class="text-muted">-</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if todo.due_date %}
-                    {% set days_diff = (todo.due_date - today).days %}
-                    {% if days_diff < 0 %}
-                    <span class="text-danger"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Overdue)</span>
-                    {% elif days_diff <= 3 %}
-                    <span class="text-warning"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Soon)</span>
-                    {% else %}
-                    {{ todo.due_date.strftime('%Y-%m-%d') }}
+        
+       <!-- TASK LIST -->
+        <div class="card shadow-lg">
+          <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Title</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Category</th>
+                  <th>Due Date</th>
+                  <th>Tags</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for todo in todos %}
+                <tr class="{% if todo.status == 'completed' %}table-success{% elif todo.due_date and todo.due_date < today %}table-danger{% endif %}">
+                  <td>{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
+                  <td>
+                    {% if todo.status == 'completed' %}<s>{% endif %}
+                    <a href="/todos/todo-details/{{ todo.id }}">{{ todo.title }}</a>
+                    {% if todo.status == 'completed' %}</s>{% endif %}
+                    {% if todo.description %}
+                    <br><small class="text-muted">{{ todo.description[:50] }}{% if todo.description|length > 50 %}...{% endif %}</small>
                     {% endif %}
-                  {% else %}
-                  <span class="text-muted">-</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if todo.tags %}
-                  {% for tag in todo.tags.split(',') %}
-                  <span class="badge badge-light">{{ tag.strip() }}</span>
-                  {% endfor %}
-                  {% else %}
-                  <span class="text-muted">-</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <div class="btn-group btn-group-sm" role="group">
-                    <form method="post" action="/todos/todo/{{ todo.id }}/toggle-complete" style="display:inline;">
-                      <button type="submit" class="btn btn-sm {% if todo.status == 'completed' %}btn-warning{% else %}btn-success{% endif %}" title="Toggle Complete" style="border-radius: 0.5rem 0 0 0.5rem;">
-                        {% if todo.status == 'completed' %}↩{% else %}✓{% endif %}
-                      </button>
-                    </form>
-                    <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm" title="Edit">✎</a>
-                    <a href="/todos/todo-details/{{ todo.id }}" class="btn btn-secondary btn-sm" title="View Details">👁</a>
-                    <form method="post" action="/todos/todo/{{ todo.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this task?')">
-                      <button type="submit" class="btn btn-danger btn-sm" title="Delete" style="border-radius: 0 0.5rem 0.5rem 0;">×</button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              {% else %}
-              <tr>
-                <td colspan="8" class="text-center text-muted">
-                  No tasks found. <a href="/todos/add-todo-page">Create your first task!</a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                  </td>
+                  <td>
+                    {% if todo.priority == 1 %}
+                    <span class="badge badge-danger">High</span>
+                    {% elif todo.priority == 2 %}
+                    <span class="badge badge-warning">Medium</span>
+                    {% else %}
+                    <span class="badge badge-secondary">Low</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge 
+                      {% if todo.status == 'completed' %}badge-success
+                      {% elif todo.status == 'progress' %}badge-info
+                      {% else %}badge-warning{% endif %}">
+                      {{ todo.status.replace('_',' ').title() }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if todo.category %}
+                    <span class="badge badge-primary">{{ todo.category.name }}</span>
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if todo.due_date %}
+                      {% set days_diff = (todo.due_date - today).days %}
+                      {% if days_diff < 0 %}
+                      <span class="text-danger"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Overdue)</span>
+                      {% elif days_diff <= 3 %}
+                      <span class="text-warning"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Soon)</span>
+                      {% else %}
+                      {{ todo.due_date.strftime('%Y-%m-%d') }}
+                      {% endif %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if todo.tags %}
+                    {% for tag in todo.tags.split(',') %}
+                    <span class="badge badge-light">{{ tag.strip() }}</span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <form method="post" action="/todos/todo/{{ todo.id }}/toggle-complete" style="display:inline;">
+                        <button type="submit" class="btn btn-sm {% if todo.status == 'completed' %}btn-warning{% else %}btn-success{% endif %}" title="Toggle Complete" style="border-radius: 0.5rem 0 0 0.5rem;">
+                          {% if todo.status == 'completed' %}↩{% else %}✓{% endif %}
+                        </button>
+                      </form>
+                      <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn btn-info btn-sm" title="Edit">✎</a>
+                      <a href="/todos/todo-details/{{ todo.id }}" class="btn btn-secondary btn-sm" title="View Details">👁</a>
+                      <form method="post" action="/todos/todo/{{ todo.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this task?')">
+                        <button type="submit" class="btn btn-danger btn-sm" title="Delete" style="border-radius: 0 0.5rem 0.5rem 0;">×</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                {% else %}
+                <tr>
+                  <td colspan="8" class="text-center text-muted">
+                    No tasks found. <a href="/todos/add-todo-page">Create your first task!</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
