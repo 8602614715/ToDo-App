@@ -190,6 +190,51 @@ def extract_status(message: str) -> Optional[str]:
     return None
 
 
+def extract_category_name(message: str, db: Session) -> Optional[int]:
+    """Extract category ID from message by matching category name"""
+    msg = message.lower()
+    
+    # Get all categories
+    categories = db.query(Category).all()
+    
+    # Check if any category name appears in the message
+    for category in categories:
+        if category.name.lower() in msg:
+            return category.id
+    
+    return None
+
+
+def extract_filters(message: str, db: Session) -> dict:
+    """Extract all filter parameters from message"""
+    filters = {
+        "priority": None,
+        "status": None,
+        "category_id": None
+    }
+    
+    # Extract priority filter
+    msg_lower = message.lower()
+    if any(word in msg_lower for word in ["high priority", "priority high", "high"]):
+        filters["priority"] = 1
+    elif any(word in msg_lower for word in ["medium priority", "priority medium", "medium"]):
+        filters["priority"] = 2
+    elif any(word in msg_lower for word in ["low priority", "priority low", "low"]):
+        filters["priority"] = 3
+    
+    # Extract status filter
+    status = extract_status(message)
+    if status:
+        filters["status"] = status
+    
+    # Extract category filter
+    category_id = extract_category_name(message, db)
+    if category_id:
+        filters["category_id"] = category_id
+    
+    return filters
+
+
 def get_priority_label(priority: int) -> str:
     """Convert priority number to label"""
     priority_map = {1: "High", 2: "Medium", 3: "Low"}
@@ -226,17 +271,21 @@ def handle_help() -> str:
 - "Delete task #1"
 - "Remove task 2"
 
-**List tasks:**
+**List tasks (with filters):**
 - "Show all tasks"
 - "List my tasks"
-- "Display all todos"
+- "Show tasks with high priority"
+- "List pending tasks"
+- "Show tasks in [category name]"
+- "Display completed tasks"
+- "Show tasks with medium priority and status progress"
 
 **Check status:**
 - "What's my task status?"
 - "Show statistics"
 - "How many tasks do I have?"
 
-You can also include details like priority (high/medium/low) and status (pending/progress/completed) in your commands."""
+You can filter tasks by priority (high/medium/low), status (pending/progress/completed), and category name when listing tasks."""
 
 
 def handle_create(message: str, db: Session, user_id: int) -> str:
@@ -340,16 +389,57 @@ def handle_delete(message: str, db: Session, user_id: int) -> str:
     return f"✅ Task #{task_id} '{title}' deleted successfully!"
 
 
-def handle_list(db: Session, user_id: int) -> str:
-    """Handle listing all tasks"""
-    todos = db.query(ToDoItem).filter(
-        ToDoItem.owner_id == user_id
-    ).order_by(ToDoItem.created_at.desc()).all()
+def handle_list(message: str, db: Session, user_id: int) -> str:
+    """Handle listing all tasks with optional filters"""
+    # Extract filters from message
+    filters = extract_filters(message, db)
+    
+    # Build query with filters
+    query = db.query(ToDoItem).filter(ToDoItem.owner_id == user_id)
+    
+    # Apply priority filter
+    if filters["priority"]:
+        query = query.filter(ToDoItem.priority == filters["priority"])
+    
+    # Apply status filter
+    if filters["status"]:
+        query = query.filter(ToDoItem.status == filters["status"])
+    
+    # Apply category filter
+    if filters["category_id"]:
+        query = query.filter(ToDoItem.category_id == filters["category_id"])
+    
+    # Get filtered results
+    todos = query.order_by(ToDoItem.created_at.desc()).all()
     
     if not todos:
+        filter_info = []
+        if filters["priority"]:
+            filter_info.append(f"priority {get_priority_label(filters['priority'])}")
+        if filters["status"]:
+            filter_info.append(f"status {filters['status']}")
+        if filters["category_id"]:
+            category = db.query(Category).filter(Category.id == filters["category_id"]).first()
+            if category:
+                filter_info.append(f"category '{category.name}'")
+        
+        if filter_info:
+            return f"📝 No tasks found with filters: {', '.join(filter_info)}.\nTry removing filters or create a new task."
         return "📝 You don't have any tasks yet. Create one by saying 'Create task: [your task]'"
     
-    response = f"📋 **Your Tasks ({len(todos)} total):**\n\n"
+    # Build filter description
+    filter_desc = []
+    if filters["priority"]:
+        filter_desc.append(f"Priority: {get_priority_label(filters['priority'])}")
+    if filters["status"]:
+        filter_desc.append(f"Status: {filters['status']}")
+    if filters["category_id"]:
+        category = db.query(Category).filter(Category.id == filters["category_id"]).first()
+        if category:
+            filter_desc.append(f"Category: {category.name}")
+    
+    filter_text = f" (filtered: {', '.join(filter_desc)})" if filter_desc else ""
+    response = f"📋 **Your Tasks ({len(todos)} total{filter_text}):**\n\n"
     
     for todo in todos:
         status_emoji = {
@@ -364,8 +454,10 @@ def handle_list(db: Session, user_id: int) -> str:
             3: "🟢"
         }.get(todo.priority, "🟢")
         
+        category_text = f" | Category: {todo.category.name}" if todo.category else ""
+        
         response += f"{status_emoji} **#{todo.id}** {priority_emoji} {todo.title}\n"
-        response += f"   Status: {todo.status} | Priority: {get_priority_label(todo.priority)}\n"
+        response += f"   Status: {todo.status} | Priority: {get_priority_label(todo.priority)}{category_text}\n"
         if todo.description:
             desc = todo.description[:50] + "..." if len(todo.description) > 50 else todo.description
             response += f"   {desc}\n"
@@ -448,7 +540,7 @@ async def chatbot(
         elif intent == "delete":
             reply = handle_delete(message, db, user_id)
         elif intent == "list":
-            reply = handle_list(db, user_id)
+            reply = handle_list(message, db, user_id)
         elif intent == "status":
             reply = handle_status(db, user_id)
         else:

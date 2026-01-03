@@ -685,13 +685,19 @@ a:hover {
   background: #0d6efd;
   color: white;
   border-radius: 50%;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   font-size: 26px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   z-index: 9999;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#chatbot-bubble:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
 }
 
 /* Chat window */
@@ -706,7 +712,7 @@ a:hover {
   box-shadow: 0 6px 20px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
-  z-index: 9999;
+  z-index: 10000;
 }
 
 /* Hidden state */
@@ -729,6 +735,12 @@ a:hover {
 
 .chatbot-header span {
   cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+
+.chatbot-header span:hover {
+  opacity: 0.7;
 }
 
 /* Messages */

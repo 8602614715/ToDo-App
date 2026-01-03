@@ -339,7 +339,7 @@
 <div id="chatbot-window" class="hidden" onclick="event.stopPropagation()">
   <div class="chatbot-header">
     Assistant
-    <span onclick="closeChatbot(event)">✖</span>
+    <span onclick="closeChatbot(event)" style="cursor: pointer; font-size: 18px; padding: 0 5px;">✖</span>
   </div>
 
   <div class="chatbot-messages" id="chatMessages">
@@ -372,8 +372,14 @@ function toggleChatbot() {
 
 /* Close only (used by X button) */
 function closeChatbot(event) {
-  event.stopPropagation();   // 🔥 prevents re-open bug
-  document.getElementById("chatbot-window").classList.add("hidden");
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const chatWindow = document.getElementById("chatbot-window");
+  if (chatWindow) {
+    chatWindow.classList.add("hidden");
+  }
 }
 
 /* Add message bubble */
