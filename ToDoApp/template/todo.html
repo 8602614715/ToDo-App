@@ -330,9 +330,16 @@
   
 </div>
 
-<div class="chatbot-container mt-4">
+<!-- Chatbot Bubble -->
+<div id="chatbot-bubble" onclick="toggleChatbot()">
+  🤖
+</div>
+
+<!-- Chatbot Window -->
+<div id="chatbot-window" class="hidden">
   <div class="chatbot-header">
-    🤖 Assistant
+    Assistant
+    <span onclick="toggleChatbot()">✖</span>
   </div>
 
   <div class="chatbot-messages" id="chatMessages">
@@ -345,7 +352,7 @@
     <input
       id="chatInput"
       type="text"
-      placeholder="Type your message..."
+      placeholder="Type a message..."
       onkeypress="handleEnter(event)"
     >
     <button onclick="sendChat()">Send</button>
@@ -356,6 +363,11 @@
 // Helper function for Jinja2 template (if needed)
 function today() {
   return new Date().toISOString().split('T')[0];
+}
+
+function toggleChatbot() {
+  const window = document.getElementById("chatbot-window");
+  window.classList.toggle("hidden");
 }
 
 function addMessage(text, type) {
@@ -387,7 +399,12 @@ async function sendChat() {
     body: JSON.stringify({ message: msg })
   });
 
+  if (!res.ok) {
+    addMessage("Please log in to use the assistant.", "bot");
+    return;
+  }
+
   const data = await res.json();
-  addMessage(data.reply, "bot");
+  addMessage(data.reply || "Sorry, I didn’t understand that.", "bot");
 }
 </script>

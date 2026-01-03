@@ -13,7 +13,9 @@ class ChatbotRequest(BaseModel):
     message: str
 
 def rule_based_reply(message: str) -> str:
-    msg = message.lower()
+    msg = message.lower().strip()
+    if msg in ["hi", "hello", "hey"]:
+        return "Hello! I’m your task assistant. How can I help you?"
     if "create" in msg and "task" in msg:
         return "Click on 'New Task' to create a task."
     if "edit" in msg:
