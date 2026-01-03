@@ -136,7 +136,8 @@ async def login_user(
         key="access_token",
         value=token,
         httponly=True,
-        samesite="lax"
+        samesite="lax",
+        path="/api"
     )
     return response
 

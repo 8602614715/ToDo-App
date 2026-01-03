@@ -7,14 +7,16 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from ToDoApp import models
 from ToDoApp.database import engine
-from ToDoApp.routers import auth, todos, admin, users
+from ToDoApp.routers import auth, todos, admin, users, chatbot
 
 app = FastAPI()
 
 # ---------------- SESSION ----------------
 app.add_middleware(
     SessionMiddleware,
-    secret_key="fb38d7a9ee0761c4769b26c91f408a2392637d24de3959a2113bf7b63987bb7b"
+    secret_key="fb38d7a9ee0761c4769b26c91f408a2392637d24de3959a2113bf7b63987bb7b",
+    same_site="lax",
+    https_only=True
 )
 
 # ---------------- DATABASE ----------------
@@ -80,7 +82,7 @@ app.include_router(auth.router)
 app.include_router(todos.router)
 app.include_router(admin.router)
 app.include_router(users.router)
-
+app.include_router(chatbot.router)
 # ---------------- TEMPLATES ----------------
 # Use absolute path for templates (works on Render)
 template_dir = BASE_DIR / "template"
