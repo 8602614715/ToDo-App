@@ -336,10 +336,10 @@
 </div>
 
 <!-- Chatbot Window -->
-<div id="chatbot-window" class="hidden">
+<div id="chatbot-window" class="hidden" onclick="event.stopPropagation()">
   <div class="chatbot-header">
     Assistant
-    <span onclick="toggleChatbot()">✖</span>
+    <span onclick="toggleChatbot(event)">✖</span>
   </div>
 
   <div class="chatbot-messages" id="chatMessages">
@@ -396,6 +396,7 @@ async function sendChat() {
   const res = await fetch("/chatbot/chat", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
+    credentials: "include",
     body: JSON.stringify({ message: msg })
   });
 
@@ -406,5 +407,10 @@ async function sendChat() {
 
   const data = await res.json();
   addMessage(data.reply || "Sorry, I didn’t understand that.", "bot");
+}
+
+function closeChatbot(event) {
+  event.stopPropagation();
+  document.getElementById("chatbot-window").classList.add("hidden");
 }
 </script>
