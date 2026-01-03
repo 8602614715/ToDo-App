@@ -674,6 +674,41 @@ a:hover {
   justify-content: center;
 }
 
+/* Chatbot Card */
+.chatbot-card {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* Chat body */
+.chatbot-body {
+  background-color: #f9fafb;
+}
+
+/* Input field */
+.chatbot-input {
+  border-radius: 6px;
+}
+
+/* Send button */
+.chatbot-send-btn {
+  width: 100%;
+  border-radius: 6px;
+}
+
+/* Chat reply area */
+.chatbot-reply {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  min-height: 40px;
+  font-size: 14px;
+  color: #333;
+}
+
 
 
 
