@@ -330,30 +330,64 @@
   
 </div>
 
-<div class="chatbot-card">
-  <div class="card-header">Assistant</div>
-  <div class="card-body chatbot-body">
-    <input id="chatInput" class="form-control chatbot-input" placeholder="Ask something">
-    <button class="chatbot-send-btn" onclick="sendChat()">Send</button>
-    <div class="chatbot-reply" id="chatReply"></div>
+<div class="chatbot-container mt-4">
+  <div class="chatbot-header">
+    🤖 Assistant
+  </div>
+
+  <div class="chatbot-messages" id="chatMessages">
+    <div class="bot-message">
+      Hello! I can help you manage your tasks.
+    </div>
+  </div>
+
+  <div class="chatbot-input-area">
+    <input
+      id="chatInput"
+      type="text"
+      placeholder="Type your message..."
+      onkeypress="handleEnter(event)"
+    >
+    <button onclick="sendChat()">Send</button>
   </div>
 </div>
+
 <script>
 // Helper function for Jinja2 template (if needed)
 function today() {
   return new Date().toISOString().split('T')[0];
 }
 
-async function sendChat() {
-    const msg = document.getElementById("chatInput").value;
-  
-    const res = await fetch("/chatbot/chat", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ message: msg })
-    });
-  
-    const data = await res.json();
-    document.getElementById("chatReply").innerText = data.reply;
+function addMessage(text, type) {
+  const messages = document.getElementById("chatMessages");
+  const div = document.createElement("div");
+  div.className = type === "user" ? "user-message" : "bot-message";
+  div.innerText = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function handleEnter(event) {
+  if (event.key === "Enter") {
+    sendChat();
   }
+}
+
+async function sendChat() {
+  const input = document.getElementById("chatInput");
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  addMessage(msg, "user");
+  input.value = "";
+
+  const res = await fetch("/chatbot/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ message: msg })
+  });
+
+  const data = await res.json();
+  addMessage(data.reply, "bot");
+}
 </script>
