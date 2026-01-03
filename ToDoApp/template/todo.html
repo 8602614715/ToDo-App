@@ -325,6 +325,16 @@
       </form>
     </div>
   </div>
+  
+  <div class="card mt-4">
+    <div class="card-header">Assistant</div>
+    <div class="card-body">
+      <input id="chatInput" class="form-control" placeholder="Ask something">
+      <button class="btn btn-primary mt-2" onclick="sendChat()">Send</button>
+      <div class="mt-2" id="chatReply"></div>
+    </div>
+  </div>
+  
 </div>
 
 <script>
@@ -332,4 +342,17 @@
 function today() {
   return new Date().toISOString().split('T')[0];
 }
+
+async function sendChat() {
+    const msg = document.getElementById("chatInput").value;
+  
+    const res = await fetch("/chatbot/chat", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message: msg })
+    });
+  
+    const data = await res.json();
+    document.getElementById("chatReply").innerText = data.reply;
+  }
 </script>
