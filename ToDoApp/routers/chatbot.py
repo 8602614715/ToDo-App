@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends
+import re
+from datetime import datetime, date
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from typing import Annotated, Optional
 from ToDoApp.routers.auth import get_current_user
-from typing import Annotated
-from ToDoApp.models import ToDoItem
+from ToDoApp.models import ToDoItem, Category
 from ToDoApp.database import SessionLocal
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
@@ -12,40 +16,448 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 class ChatbotRequest(BaseModel):
     message: str
 
-def rule_based_reply(message: str) -> str:
-    msg = message.lower().strip()
-    if msg in ["hi", "hello", "hey"]:
-        return "Hello! I’m your task assistant. How can I help you?"
-    if "create" in msg and "task" in msg:
-        return "Click on 'New Task' to create a task."
-    if "edit" in msg:
-        return "Click on Edit Button next to a task."
-    if "delete" in msg:
-        return "Click on Delete Button next to a task."
-    if "status" in msg:
-        return "Tasks can be pending, Progress, Completed."
-    return "I'm sorry, I don't understand your request. Please try again."
 
-def extract_task_title(msg: str) -> str:
-    return msg.replace("create task", "").strip()
+class ChatbotResponse(BaseModel):
+    reply: str
 
-@router.post("/chat")
-async def chatbot(request: ChatbotRequest, user: user_dependency):
-    msg = request.message.lower()
 
-    if msg.startswith("create task"):
-        title = extract_task_title(msg)
-        db = SessionLocal()
-        todo = ToDoItem(
-            title=title,
-            description="created via chatbot",
-            priority=3,
-            owner_id=user["user_id"],
-        )
-        db.add(todo)
-        db.commit()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
         db.close()
-        return {"reply": f"Task '{title}' created successfully. ({user['username']})"}
+
+
+db_dependency = Annotated[Session, Depends(get_db)]
+
+
+# ---------------- NATURAL LANGUAGE PROCESSING ----------------
+
+
+def extract_intent(message: str) -> str:
+    """Extract the intent from user message"""
+    msg = message.lower().strip()
     
-    reply = rule_based_reply(request.message)
-    return {"reply": f"{reply} ({user['username']})"}
+    # Create task
+    if any(word in msg for word in ["create", "add", "new", "make"]) and any(word in msg for word in ["task", "todo", "item"]):
+        return "create"
+    
+    # Update/Edit task
+    if any(word in msg for word in ["update", "edit", "change", "modify"]) and any(word in msg for word in ["task", "todo", "item"]):
+        return "update"
+    
+    # Delete task
+    if any(word in msg for word in ["delete", "remove", "drop"]) and any(word in msg for word in ["task", "todo", "item"]):
+        return "delete"
+    
+    # List tasks
+    if any(word in msg for word in ["list", "show", "display", "get all", "all tasks", "my tasks"]):
+        return "list"
+    
+    # Status query
+    if any(word in msg for word in ["status", "progress", "how many", "count", "statistics", "stats"]):
+        return "status"
+    
+    # Help
+    if any(word in msg for word in ["help", "what can you do", "commands", "how"]):
+        return "help"
+    
+    # Greeting
+    if any(word in msg for word in ["hi", "hello", "hey", "greetings"]):
+        return "greeting"
+    
+    return "unknown"
+
+
+def extract_task_id(message: str) -> Optional[int]:
+    """Extract task ID from message"""
+    # Look for patterns like "task 1", "id 5", "#3", "task number 2"
+    patterns = [
+        r'task\s*(?:#|number|id)?\s*(\d+)',
+        r'id\s*(\d+)',
+        r'#(\d+)',
+        r'(\d+)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, message.lower())
+        if match:
+            try:
+                return int(match.group(1))
+            except:
+                continue
+    return None
+
+
+def extract_title(message: str, intent: str) -> Optional[str]:
+    """Extract task title from message"""
+    msg = message.strip()
+    
+    # Remove intent keywords
+    remove_patterns = [
+        r'^(create|add|new|make)\s+(?:a\s+)?(?:new\s+)?(?:task|todo|item)[\s:]*',
+        r'^(update|edit|change|modify)\s+(?:task|todo|item)\s*(?:#|number|id)?\s*\d*[\s:]*',
+        r'^(delete|remove|drop)\s+(?:task|todo|item)\s*(?:#|number|id)?\s*\d*[\s:]*',
+    ]
+    
+    for pattern in remove_patterns:
+        msg = re.sub(pattern, '', msg, flags=re.IGNORECASE)
+    
+    # Extract text in quotes
+    quoted = re.search(r'["\']([^"\']+)["\']', msg)
+    if quoted:
+        return quoted.group(1).strip()
+    
+    # Extract text after colon
+    if ':' in msg:
+        parts = msg.split(':', 1)
+        if len(parts) > 1:
+            title = parts[1].strip()
+            # Remove description if present
+            if 'description' in title.lower() or 'desc' in title.lower():
+                title = re.sub(r'description[:\s]*.*', '', title, flags=re.IGNORECASE)
+            return title.split(',')[0].strip() if title else None
+    
+    # Extract first meaningful phrase
+    words = msg.split()
+    if len(words) > 0:
+        # Take first 5-10 words as title
+        title = ' '.join(words[:10])
+        # Remove common words
+        title = re.sub(r'\b(with|priority|status|description|desc)\b.*', '', title, flags=re.IGNORECASE)
+        return title.strip() if title.strip() else None
+    
+    return None
+
+
+def extract_description(message: str) -> Optional[str]:
+    """Extract description from message"""
+    # Look for "description:", "desc:", or text after comma
+    patterns = [
+        r'description[:\s]+([^,]+)',
+        r'desc[:\s]+([^,]+)',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, message, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    
+    # If message has comma, description might be after it
+    if ',' in message:
+        parts = message.split(',', 1)
+        if len(parts) > 1:
+            desc = parts[1].strip()
+            # Remove priority/status keywords
+            desc = re.sub(r'\b(priority|status|high|medium|low|pending|progress|completed)\b.*', '', desc, flags=re.IGNORECASE)
+            return desc.strip() if desc.strip() else None
+    
+    return None
+
+
+def extract_priority(message: str) -> int:
+    """Extract priority from message (default: 3 = Low)"""
+    msg = message.lower()
+    
+    # Check for explicit priority numbers
+    if re.search(r'priority\s*(?:is\s*)?(?:=)?\s*([123])', msg):
+        match = re.search(r'priority\s*(?:is\s*)?(?:=)?\s*([123])', msg)
+        return int(match.group(1))
+    
+    # Check for priority words
+    if any(word in msg for word in ["high priority", "priority high", "important", "urgent"]):
+        return 1
+    if any(word in msg for word in ["medium priority", "priority medium", "normal"]):
+        return 2
+    if any(word in msg for word in ["low priority", "priority low", "not important"]):
+        return 3
+    
+    return 3  # Default to low
+
+
+def extract_status(message: str) -> Optional[str]:
+    """Extract status from message"""
+    msg = message.lower()
+    
+    if any(word in msg for word in ["completed", "complete", "done", "finished"]):
+        return "completed"
+    if any(word in msg for word in ["progress", "in progress", "working", "started"]):
+        return "progress"
+    if any(word in msg for word in ["pending", "not started", "todo"]):
+        return "pending"
+    
+    return None
+
+
+def get_priority_label(priority: int) -> str:
+    """Convert priority number to label"""
+    priority_map = {1: "High", 2: "Medium", 3: "Low"}
+    return priority_map.get(priority, "Low")
+
+
+# ---------------- CHATBOT HANDLERS ----------------
+
+
+def handle_greeting() -> str:
+    return "Hello! I'm your task assistant. I can help you:\n" \
+           "• Create tasks\n" \
+           "• Update/edit tasks\n" \
+           "• Delete tasks\n" \
+           "• List all your tasks\n" \
+           "• Check task status and statistics\n\n" \
+           "Try saying: 'Create task: Buy groceries' or 'Show all my tasks'"
+
+
+def handle_help() -> str:
+    return """Here's what I can do:
+
+**Create a task:**
+- "Create task: [title]"
+- "Add task: [title] with description [description]"
+- "New task: [title], priority high"
+
+**Update a task:**
+- "Update task #1: [new title]"
+- "Edit task 2, status completed"
+- "Change task #3, priority high"
+
+**Delete a task:**
+- "Delete task #1"
+- "Remove task 2"
+
+**List tasks:**
+- "Show all tasks"
+- "List my tasks"
+- "Display all todos"
+
+**Check status:**
+- "What's my task status?"
+- "Show statistics"
+- "How many tasks do I have?"
+
+You can also include details like priority (high/medium/low) and status (pending/progress/completed) in your commands."""
+
+
+def handle_create(message: str, db: Session, user_id: int) -> str:
+    """Handle task creation"""
+    title = extract_title(message, "create")
+    if not title:
+        return "I couldn't find a task title. Please try: 'Create task: [your task title]'"
+    
+    description = extract_description(message) or "Created via chatbot"
+    priority = extract_priority(message)
+    status = extract_status(message) or "pending"
+    
+    # Create the task
+    todo = ToDoItem(
+        title=title,
+        description=description,
+        priority=priority,
+        status=status,
+        owner_id=user_id
+    )
+    
+    db.add(todo)
+    db.commit()
+    db.refresh(todo)
+    
+    return f"✅ Task created successfully!\n" \
+           f"**ID:** {todo.id}\n" \
+           f"**Title:** {todo.title}\n" \
+           f"**Description:** {todo.description}\n" \
+           f"**Priority:** {get_priority_label(todo.priority)}\n" \
+           f"**Status:** {todo.status}"
+
+
+def handle_update(message: str, db: Session, user_id: int) -> str:
+    """Handle task update"""
+    task_id = extract_task_id(message)
+    if not task_id:
+        return "I couldn't find a task ID. Please specify which task to update, e.g., 'Update task #1: [new title]'"
+    
+    # Find the task
+    todo = db.query(ToDoItem).filter(
+        ToDoItem.id == task_id,
+        ToDoItem.owner_id == user_id
+    ).first()
+    
+    if not todo:
+        return f"❌ Task #{task_id} not found. Please check the task ID."
+    
+    # Extract updates
+    title = extract_title(message, "update")
+    description = extract_description(message)
+    priority = extract_priority(message)
+    status = extract_status(message)
+    
+    # Apply updates
+    updates = []
+    if title and title != todo.title:
+        todo.title = title
+        updates.append(f"Title: {title}")
+    
+    if description:
+        todo.description = description
+        updates.append(f"Description: {description}")
+    
+    if priority != todo.priority:
+        todo.priority = priority
+        updates.append(f"Priority: {get_priority_label(priority)}")
+    
+    if status and status != todo.status:
+        todo.status = status
+        updates.append(f"Status: {status}")
+    
+    if not updates:
+        return f"Task #{task_id} found, but no changes detected. Please specify what to update."
+    
+    todo.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return f"✅ Task #{task_id} updated successfully!\n" + "\n".join([f"• {u}" for u in updates])
+
+
+def handle_delete(message: str, db: Session, user_id: int) -> str:
+    """Handle task deletion"""
+    task_id = extract_task_id(message)
+    if not task_id:
+        return "I couldn't find a task ID. Please specify which task to delete, e.g., 'Delete task #1'"
+    
+    # Find the task
+    todo = db.query(ToDoItem).filter(
+        ToDoItem.id == task_id,
+        ToDoItem.owner_id == user_id
+    ).first()
+    
+    if not todo:
+        return f"❌ Task #{task_id} not found. Please check the task ID."
+    
+    title = todo.title
+    db.delete(todo)
+    db.commit()
+    
+    return f"✅ Task #{task_id} '{title}' deleted successfully!"
+
+
+def handle_list(db: Session, user_id: int) -> str:
+    """Handle listing all tasks"""
+    todos = db.query(ToDoItem).filter(
+        ToDoItem.owner_id == user_id
+    ).order_by(ToDoItem.created_at.desc()).all()
+    
+    if not todos:
+        return "📝 You don't have any tasks yet. Create one by saying 'Create task: [your task]'"
+    
+    response = f"📋 **Your Tasks ({len(todos)} total):**\n\n"
+    
+    for todo in todos:
+        status_emoji = {
+            "completed": "✅",
+            "progress": "🔄",
+            "pending": "⏳"
+        }.get(todo.status, "⏳")
+        
+        priority_emoji = {
+            1: "🔴",
+            2: "🟡",
+            3: "🟢"
+        }.get(todo.priority, "🟢")
+        
+        response += f"{status_emoji} **#{todo.id}** {priority_emoji} {todo.title}\n"
+        response += f"   Status: {todo.status} | Priority: {get_priority_label(todo.priority)}\n"
+        if todo.description:
+            desc = todo.description[:50] + "..." if len(todo.description) > 50 else todo.description
+            response += f"   {desc}\n"
+        response += "\n"
+    
+    return response
+
+
+def handle_status(db: Session, user_id: int) -> str:
+    """Handle status query"""
+    todos = db.query(ToDoItem).filter(ToDoItem.owner_id == user_id).all()
+    
+    if not todos:
+        return "📊 You don't have any tasks yet."
+    
+    total = len(todos)
+    completed = len([t for t in todos if t.status == "completed"])
+    progress = len([t for t in todos if t.status == "progress"])
+    pending = len([t for t in todos if t.status == "pending"])
+    
+    high_priority = len([t for t in todos if t.priority == 1])
+    medium_priority = len([t for t in todos if t.priority == 2])
+    low_priority = len([t for t in todos if t.priority == 3])
+    
+    completion_rate = (completed / total * 100) if total > 0 else 0
+    
+    response = f"📊 **Task Statistics:**\n\n"
+    response += f"**Total Tasks:** {total}\n\n"
+    response += f"**By Status:**\n"
+    response += f"✅ Completed: {completed}\n"
+    response += f"🔄 In Progress: {progress}\n"
+    response += f"⏳ Pending: {pending}\n\n"
+    response += f"**By Priority:**\n"
+    response += f"🔴 High: {high_priority}\n"
+    response += f"🟡 Medium: {medium_priority}\n"
+    response += f"🟢 Low: {low_priority}\n\n"
+    response += f"**Completion Rate:** {completion_rate:.1f}%"
+    
+    return response
+
+
+def handle_unknown(message: str) -> str:
+    return "I'm sorry, I don't understand that request. Here's what I can help you with:\n\n" \
+           "• Create tasks: 'Create task: [title]'\n" \
+           "• Update tasks: 'Update task #1: [changes]'\n" \
+           "• Delete tasks: 'Delete task #1'\n" \
+           "• List tasks: 'Show all tasks'\n" \
+           "• Check status: 'What's my task status?'\n\n" \
+           "Type 'help' for more information."
+
+
+# ---------------- MAIN CHATBOT ENDPOINT ----------------
+
+
+@router.post("/chat", response_model=ChatbotResponse)
+async def chatbot(
+    request: ChatbotRequest,
+    user: user_dependency,
+    db: db_dependency
+):
+    """Main chatbot endpoint that processes natural language commands"""
+    message = request.message.strip()
+    
+    if not message:
+        return ChatbotResponse(reply="Please send a message. Type 'help' to see what I can do.")
+    
+    intent = extract_intent(message)
+    user_id = user["user_id"]
+    username = user.get("username", "User")
+    
+    try:
+        if intent == "greeting":
+            reply = handle_greeting()
+        elif intent == "help":
+            reply = handle_help()
+        elif intent == "create":
+            reply = handle_create(message, db, user_id)
+        elif intent == "update":
+            reply = handle_update(message, db, user_id)
+        elif intent == "delete":
+            reply = handle_delete(message, db, user_id)
+        elif intent == "list":
+            reply = handle_list(db, user_id)
+        elif intent == "status":
+            reply = handle_status(db, user_id)
+        else:
+            reply = handle_unknown(message)
+        
+        # Add username signature
+        return ChatbotResponse(reply=f"{reply}\n\n— {username}")
+    
+    except Exception as e:
+        return ChatbotResponse(
+            reply=f"❌ An error occurred: {str(e)}\n\n— {username}"
+        )

@@ -355,7 +355,7 @@
       placeholder="Type a message..."
       onkeypress="handleEnter(event)"
     >
-    <button onclick="sendChat()">Send</button>
+    <button onclick="sendChat()">Send ▶️</button>
   </div>
 </div>
 
@@ -381,6 +381,8 @@ function addMessage(text, type) {
   const messages = document.getElementById("chatMessages");
   const div = document.createElement("div");
   div.className = type === "user" ? "user-message" : "bot-message";
+  // Preserve line breaks and basic formatting
+  div.style.whiteSpace = "pre-wrap";
   div.innerText = text;
   messages.appendChild(div);
   messages.scrollTop = messages.scrollHeight;
