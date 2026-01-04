@@ -45,6 +45,14 @@ def parse_tags(tags_str: Optional[str]) -> list:
         return []
     return [tag.strip() for tag in tags_str.split(",") if tag.strip()]
 
+def build_qs(request: Request, exclude: str | None = None) -> str:
+    """
+    Build a safe query string excluding one parameter.
+    """
+    params = dict(request.query_params)
+    if exclude:
+        params.pop(exclude, None)
+    return urlencode(params)
 
 # ---------------- PAGES ----------------
 @router.get("/todo-page")
@@ -125,6 +133,11 @@ async def todo_page(
     # Calculate pagination info
     total_pages = (total_count + per_page - 1) // per_page
     
+    qs_no_category = build_qs(request, "category_id")
+    qs_no_status = build_qs(request, "status")
+    qs_no_priority = build_qs(request, "priority")
+  
+ 
     return templates.TemplateResponse(
         "todo.html",
         {
@@ -154,7 +167,10 @@ async def todo_page(
                 "total_count": total_count,
                 "has_prev": page > 1,
                 "has_next": page < total_pages,
-            }
+            },
+        "qs_no_category": qs_no_category,
+        "qs_no_status": qs_no_status,
+        "qs_no_priority": qs_no_priority,
         },
     )
 
