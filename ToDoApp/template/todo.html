@@ -367,7 +367,17 @@ function today() {
 
 function toggleChatbot() {
   const chat = document.getElementById("chatbot-window");
-  chat.classList.toggle("hidden");
+  if (chat) {
+    if (chat.classList.contains("hidden")) {
+      // Show chatbot
+      chat.classList.remove("hidden");
+      chat.style.setProperty("display", "flex", "important");
+    } else {
+      // Hide chatbot
+      chat.classList.add("hidden");
+      chat.style.setProperty("display", "none", "important");
+    }
+  }
 }
 
 /* Close only (used by X button) */
@@ -379,6 +389,7 @@ function closeChatbot(event) {
   const chatWindow = document.getElementById("chatbot-window");
   if (chatWindow) {
     chatWindow.classList.add("hidden");
+    chatWindow.style.setProperty("display", "none", "important");
   }
 }
 
