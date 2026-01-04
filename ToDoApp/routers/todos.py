@@ -4,6 +4,7 @@ from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func, desc, asc
 from typing import Annotated, Optional
+from urllib.parse import urlencode
 from ToDoApp.database import SessionLocal
 from ToDoApp.models import ToDoItem, Category
 from ToDoApp.routers.auth import get_current_user
