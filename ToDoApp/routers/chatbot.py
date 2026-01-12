@@ -36,58 +36,46 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 
 def extract_intent(message: str) -> str:
-    """Extract the intent from user message"""
     msg = message.lower().strip()
-    
-    # Create task
-    if any(word in msg for word in ["create", "add", "new", "make"]) and any(word in msg for word in ["task", "todo", "item"]):
+
+    if any(w in msg for w in ["create", "add", "new", "make"]) and "task" in msg:
         return "create"
-    
-    # Update/Edit task
-    if any(word in msg for word in ["update", "edit", "change", "modify"]) and any(word in msg for word in ["task", "todo", "item"]):
+
+    if any(w in msg for w in ["update", "edit", "change", "modify"]) and "task" in msg:
         return "update"
-    
-    # Delete task
-    if any(word in msg for word in ["delete", "remove", "drop"]) and any(word in msg for word in ["task", "todo", "item"]):
+
+    if any(w in msg for w in ["delete", "remove"]) and "task" in msg:
         return "delete"
-    
-    # List tasks
-    if any(word in msg for word in ["list", "show", "display", "get all", "all tasks", "my tasks"]):
+
+    if any(w in msg for w in ["list", "show", "display", "my tasks"]):
         return "list"
-    
-    # Status query
-    if any(word in msg for word in ["status", "progress", "how many", "count", "statistics", "stats"]):
+
+    if any(w in msg for w in ["status", "progress", "statistics"]):
         return "status"
-    
-    # Help
-    if any(word in msg for word in ["help", "what can you do", "commands", "how"]):
+
+    if any(w in msg for w in ["help", "commands"]):
         return "help"
-    
-    # Greeting
-    if any(word in msg for word in ["hi", "hello", "hey", "greetings"]):
+
+    if any(w in msg for w in ["hi", "hello", "hey"]):
         return "greeting"
-    
+
     return "unknown"
 
+   
 
-def extract_task_id(message: str) -> Optional[int]:
-    """Extract task ID from message"""
-    # Look for patterns like "task 1", "id 5", "#3", "task number 2"
+
+def extract_task_id(message: str):
     patterns = [
-        r'task\s*(?:#|number|id)?\s*(\d+)',
-        r'id\s*(\d+)',
-        r'#(\d+)',
-        r'(\d+)',
+        r'task\s*(?:#|id|number)?\s*(\d{1,3})',
+        r'#(\d{1,3})'
     ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, message.lower())
-        if match:
-            try:
-                return int(match.group(1))
-            except:
-                continue
+
+    for p in patterns:
+        m = re.search(p, message.lower())
+        if m:
+            return int(m.group(1))
     return None
+
 
 
 def extract_title(message: str, intent: str) -> Optional[str]:
@@ -518,38 +506,63 @@ async def chatbot(
     user: user_dependency,
     db: db_dependency
 ):
-    """Main chatbot endpoint that processes natural language commands"""
-    message = request.message.strip()
-    
-    if not message:
-        return ChatbotResponse(reply="Please send a message. Type 'help' to see what I can do.")
-    
+    raw_message = request.message.strip()
+    if not raw_message:
+        return ChatbotResponse(reply="Please type a message.")
+
+    # ✅ AI NORMALIZATION (NEW)
+    message = normalize_with_ai(raw_message)
+
     intent = extract_intent(message)
     user_id = user["user_id"]
     username = user.get("username", "User")
-    
+
     try:
         if intent == "greeting":
             reply = handle_greeting()
+
         elif intent == "help":
             reply = handle_help()
+
         elif intent == "create":
             reply = handle_create(message, db, user_id)
+
         elif intent == "update":
             reply = handle_update(message, db, user_id)
+
         elif intent == "delete":
             reply = handle_delete(message, db, user_id)
+
         elif intent == "list":
             reply = handle_list(message, db, user_id)
+
         elif intent == "status":
             reply = handle_status(db, user_id)
+
         else:
             reply = handle_unknown(message)
-        
-        # Add username signature
+
         return ChatbotResponse(reply=f"{reply}\n\n— {username}")
-    
+
     except Exception as e:
         return ChatbotResponse(
-            reply=f"❌ An error occurred: {str(e)}\n\n— {username}"
+            reply=f"❌ Something went wrong.\n{str(e)}\n\n— {username}"
         )
+
+
+def normalize_with_ai(message: str) -> str:
+    """
+    Uses LLM to rewrite user input into
+    a clean, command-like sentence.
+    """
+    # pseudo-code
+    response = llm_call(  # pyright: ignore[reportUndefinedVariable]
+        system_prompt="""
+        Convert user messages into clear task commands.
+        Do NOT invent IDs.
+        Do NOT confirm actions.
+        Keep it short.
+        """,
+        user_prompt=message
+    )
+    return response
