@@ -38,6 +38,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def extract_intent(message: str) -> str:
     msg = message.lower().strip()
 
+    if any(w in msg for w in ["what should", "suggest", "recommend", "plan"]):
+        return "suggest"
+
     if any(w in msg for w in ["create", "add", "new", "make"]) and "task" in msg:
         return "create"
 
@@ -58,6 +61,9 @@ def extract_intent(message: str) -> str:
 
     if any(w in msg for w in ["hi", "hello", "hey"]):
         return "greeting"
+    
+    if any(w in msg for w in ["study plan", "study planner", "exam plan","plan my study", "help me study", "semester exam"]):
+        return "study_plan"
 
     return "unknown"
 
@@ -299,11 +305,11 @@ def handle_create(message: str, db: Session, user_id: int) -> str:
     db.refresh(todo)
     
     return f"✅ Task created successfully!\n" \
-           f"**ID:** {todo.id}\n" \
-           f"**Title:** {todo.title}\n" \
-           f"**Description:** {todo.description}\n" \
-           f"**Priority:** {get_priority_label(todo.priority)}\n" \
-           f"**Status:** {todo.status}"
+           f"ID: {todo.id}\n" \
+           f"Title: {todo.title}\n" \
+           f"Description: {todo.description}\n" \
+           f"Priority: {get_priority_label(todo.priority)}\n" \
+           f"Status: {todo.status}"
 
 
 def handle_update(message: str, db: Session, user_id: int) -> str:
@@ -471,17 +477,17 @@ def handle_status(db: Session, user_id: int) -> str:
     
     completion_rate = (completed / total * 100) if total > 0 else 0
     
-    response = f"📊 **Task Statistics:**\n\n"
-    response += f"**Total Tasks:** {total}\n\n"
-    response += f"**By Status:**\n"
+    response = f"📊 Task Statistics:**\n\n"
+    response += f"Total Tasks:** {total}\n\n"
+    response += f"By Status:**\n"
     response += f"✅ Completed: {completed}\n"
     response += f"🔄 In Progress: {progress}\n"
     response += f"⏳ Pending: {pending}\n\n"
-    response += f"**By Priority:**\n"
+    response += f"By Priority:**\n"
     response += f"🔴 High: {high_priority}\n"
     response += f"🟡 Medium: {medium_priority}\n"
     response += f"🟢 Low: {low_priority}\n\n"
-    response += f"**Completion Rate:** {completion_rate:.1f}%"
+    response += f"Completion Rate:** {completion_rate:.1f}%"
     
     return response
 
@@ -495,6 +501,57 @@ def handle_unknown(message: str) -> str:
            "• Check status: 'What's my task status?'\n\n" \
            "Type 'help' for more information."
 
+def handle_suggest(db: Session, user_id: int) -> str:
+    todos = db.query(ToDoItem)\
+              .filter(ToDoItem.owner_id == user_id)\
+              .all()
+
+    if not todos:
+        return "You have no tasks yet."
+
+    high = [t for t in todos if t.priority == 1 and t.status != "completed"]
+
+    if high:
+        return (
+            f"You have {len(high)} high-priority pending tasks.\n"
+            f"I suggest starting with '{high[0].title}'."
+        )
+
+    return "All tasks are under control. You can work on any pending task."
+
+
+def handle_study_plan(db: Session, user_id: int) -> str:
+    todos = db.query(ToDoItem)\
+              .filter(ToDoItem.owner_id == user_id)\
+              .all()
+
+    study_tasks = [
+        t for t in todos
+        if any(word in t.title.lower() for word in ["study", "exam", "revise", "revision"])
+        and t.status != "completed"
+    ]
+
+    if not study_tasks:
+        return (
+            "I don’t see any study-related tasks yet.\n\n"
+            "Would you like me to create a semester study plan for you?"
+        )
+
+    plan = "📘 **Suggested Study Plan:**\n\n"
+
+    for i, task in enumerate(study_tasks, start=1):
+        plan += f"{i}. {task.title} (Priority: {get_priority_label(task.priority)})\n"
+
+    plan += (
+        "\nI recommend studying high-priority subjects first.\n"
+        "Would you like me to:\n"
+        "1️⃣ Break this into daily tasks\n"
+        "2️⃣ Set a weekly schedule\n"
+        "3️⃣ Keep it as is\n\n"
+        "Reply with 1, 2, or 3."
+    )
+
+    return plan
 
 # ---------------- MAIN CHATBOT ENDPOINT ----------------
 
@@ -537,6 +594,12 @@ async def chatbot(
 
         elif intent == "status":
             reply = handle_status(db, user_id)
+
+        elif intent == "suggest":
+            reply = handle_suggest(db, user_id)
+
+        elif intent == "study_plan":
+            reply = handle_study_plan(db, user_id)
 
         else:
             reply = handle_unknown(message)
