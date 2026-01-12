@@ -61,7 +61,6 @@ def extract_intent(message: str) -> str:
 
     return "unknown"
 
-   
 
 
 def extract_task_id(message: str):
@@ -550,19 +549,31 @@ async def chatbot(
         )
 
 
+# ---------------- AI NORMALIZATION LAYER ----------------
+
 def normalize_with_ai(message: str) -> str:
     """
-    Uses LLM to rewrite user input into
-    a clean, command-like sentence.
+    AI rewrites user input into a clean task command.
+    This function is SAFE:
+    - No DB access
+    - No task IDs invented
+    - If AI fails, original message is used
     """
-    # pseudo-code
-    response = llm_call(  # pyright: ignore[reportUndefinedVariable]
-        system_prompt="""
-        Convert user messages into clear task commands.
-        Do NOT invent IDs.
-        Do NOT confirm actions.
-        Keep it short.
-        """,
-        user_prompt=message
-    )
-    return response
+    try:
+        # PLACEHOLDER: replace with OpenAI / local LLM
+        # Example prompt behavior shown below
+
+        """
+        System Prompt:
+        You are a task assistant.
+        Rewrite user input into a clear command.
+        Do not invent task IDs.
+        Do not confirm actions.
+        Output ONE short sentence.
+        """
+
+        # MOCK RESPONSE (for now)
+        return message
+
+    except Exception:
+        return message
