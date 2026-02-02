@@ -131,7 +131,7 @@ async def login_user(
         "user_role": user.role
     }
 
-    response = RedirectResponse("/todos/todo-page", status_code=302)
+    response = RedirectResponse("/dashboard/", status_code=302)
     response.set_cookie(
         key="access_token",
         value=token,

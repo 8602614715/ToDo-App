@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/dashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Dashboard - TodoApp</title>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-container">
+        <!-- LEFT SIDEBAR -->
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="brand-text">
+                    <h3>Brand Name</h3>
+                    <p>Slogan Here</p>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="/dashboard/" class="nav-item active">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/todos/todo-page" class="nav-item">
+                    <i class="fas fa-folder"></i>
+                    <span>Project</span>
+                </a>
+                {% if is_manager %}
+                <a href="/admin/todo" class="nav-item">
+                    <i class="fas fa-users"></i>
+                    <span>Members</span>
+                </a>
+                {% endif %}
+                <a href="#" class="nav-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                    <span class="badge">4</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Calendar</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Setting</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-sync"></i>
+                    <span>New Update</span>
+                    <span class="badge">2</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="/auth/logout" class="logout-btn">
+                    <i class="fas fa-power-off"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="dashboard-main">
+            <!-- TOP HEADER -->
+            <header class="dashboard-header">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search" class="search-input">
+                </div>
+                <a href="/todos/add-todo-page" class="create-task-btn">
+                    <i class="fas fa-plus"></i>
+                    <span>Create a New Task</span>
+                </a>
+                <div class="header-actions">
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="user-profile">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">{{ user_name }}</div>
+                            <div class="profile-title">{{ user_title }}</div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD CONTENT -->
+            <div class="dashboard-content">
+                <!-- TOP ROW: Calendar & Analytics -->
+                <div class="dashboard-row">
+                    <!-- Calendar Widget -->
+                    <div class="dashboard-card calendar-card">
+                        <div class="card-header">
+                            <i class="fas fa-calendar"></i>
+                            <h3>Calendar</h3>
+                        </div>
+                        <div class="calendar-content">
+                            <select class="month-selector" id="monthSelector">
+                                <option value="0">January 2025</option>
+                                <option value="1">February 2025</option>
+                                <option value="2" selected>March 2025</option>
+                                <option value="3">April 2025</option>
+                            </select>
+                            <div class="calendar-grid" id="calendarGrid">
+                                <!-- Calendar will be generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Analytics Widget -->
+                    <div class="dashboard-card analytics-card">
+                        <div class="card-header">
+                            <i class="fas fa-chart-bar"></i>
+                            <h3>Task Analytics</h3>
+                        </div>
+                        <div class="analytics-content">
+                            <div class="analytics-controls">
+                                <button class="period-btn active" data-period="week">W</button>
+                                <button class="period-btn" data-period="month">M</button>
+                                <button class="period-btn" data-period="year">Y</button>
+                            </div>
+                            <canvas id="analyticsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTTOM ROW: Project Category, Today Task, Summary -->
+                <div class="dashboard-row">
+                    <!-- Project Category Widget -->
+                    <div class="dashboard-card category-card">
+                        <div class="card-header">
+                            <i class="fas fa-list"></i>
+                            <h3>Project Category</h3>
+                        </div>
+                        <div class="category-content">
+                            <div class="donut-chart-container">
+                                <canvas id="categoryChart"></canvas>
+                                <div class="donut-center">
+                                    <span class="donut-percentage">100%</span>
+                                </div>
+                            </div>
+                            <div class="category-legend" id="categoryLegend">
+                                <!-- Legend will be generated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today Task Widget -->
+                    <div class="dashboard-card tasks-card">
+                        <div class="card-header">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>Today Task</h3>
+                            <a href="/todos/add-todo-page" class="add-task-btn">
+                                <i class="fas fa-plus"></i>
+                                <span>Add Task</span>
+                            </a>
+                        </div>
+                        <div class="tasks-list" id="todayTasksList">
+                            {% if today_tasks %}
+                                {% for task in today_tasks %}
+                                <div class="task-item" data-task-id="{{ task.id }}">
+                                    <div class="task-checkbox">
+                                        <input type="checkbox" {% if task.status == 'completed' %}checked{% endif %} 
+                                               onchange="toggleTask({{ task.id }})">
+                                    </div>
+                                    <div class="task-content">
+                                        <div class="task-title">{{ task.title }}</div>
+                                        <div class="task-time" data-created="{% if task.created_at %}{{ task.created_at.isoformat() }}{% endif %}">
+                                            Loading...
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="no-tasks">
+                                    <p>No tasks for today. Create a new task to get started!</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <a href="/todos/todo-page" class="see-more-btn">See More</a>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="dashboard-card summary-card">
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-icon">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <div class="summary-label">Total Project</div>
+                                    <div class="summary-value">{{ stats.total }}</div>
+                                    <div class="summary-progress">
+                                        <div class="progress-bar" style="width: {{ (stats.completed / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-icon">
+                                    <i class="fas fa-cog"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <div class="summary-label">On Going Project</div>
+                                    <div class="summary-value">{{ stats.progress }}</div>
+                                    <div class="summary-progress">
+                                        <div class="progress-bar" style="width: {{ (stats.progress / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-icon">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <div class="summary-label">Upcoming Projects</div>
+                                    <div class="summary-value">{{ stats.upcoming }}</div>
+                                    <div class="summary-progress">
+                                        <div class="progress-bar" style="width: {{ (stats.upcoming / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-item">
+                                <div class="summary-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <div class="summary-label">Complete Project</div>
+                                    <div class="summary-value">{{ stats.completed }}</div>
+                                    <div class="summary-progress">
+                                        <div class="progress-bar" style="width: {{ (stats.completed / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/jquery-slim.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/popper.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/bootstrap.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/dashboard.js') }}" defer></script>
+</body>
+</html>

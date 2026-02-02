@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from ToDoApp import models
 from ToDoApp.database import engine
-from ToDoApp.routers import auth, todos, admin, users, chatbot
+from ToDoApp.routers import auth, todos, admin, users, chatbot, dashboard
 
 app = FastAPI()
 
@@ -83,6 +83,7 @@ app.include_router(todos.router)
 app.include_router(admin.router)
 app.include_router(users.router)
 app.include_router(chatbot.router)
+app.include_router(dashboard.router)
 # ---------------- TEMPLATES ----------------
 # Use absolute path for templates (works on Render)
 template_dir = BASE_DIR / "template"
@@ -98,7 +99,7 @@ async def root(request: Request):
     """
     if request.session.get("user"):
         return RedirectResponse(
-            url="/todos/todo-page",
+            url="/dashboard/",
             status_code=status.HTTP_302_FOUND
         )
 
