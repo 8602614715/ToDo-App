@@ -253,7 +253,7 @@ async def create_todo(
     db.commit()
 
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -298,7 +298,7 @@ async def update_todo(
     db.commit()
 
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -322,7 +322,7 @@ async def delete_todo(
     db.commit()
 
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -349,7 +349,7 @@ async def quick_status_change(
         db.commit()
 
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -377,7 +377,7 @@ async def toggle_complete(
     db.commit()
 
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -459,7 +459,7 @@ async def create_category(
     db.commit()
     
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )
 
@@ -482,6 +482,6 @@ async def delete_category(
     db.commit()
     
     return RedirectResponse(
-        url="/todos/todo-page",
+        url="/dashboard/",
         status_code=status.HTTP_302_FOUND
     )

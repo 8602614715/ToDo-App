@@ -76,7 +76,7 @@
             });
 
             if (response.ok) {
-                window.location.href = '/todos/todo-page'; // Redirect to the todo page
+                window.location.href = '/dashboard/'; // Redirect to the dashboard
             } else {
                 // Handle error
                 const errorData = await response.json();
@@ -107,7 +107,7 @@
 
                 if (response.ok) {
                     // Handle success
-                    window.location.href = '/todos/todo-page'; // Redirect to the todo page
+                    window.location.href = '/dashboard/'; // Redirect to the dashboard
                 } else {
                     // Handle error
                     const errorData = await response.json();

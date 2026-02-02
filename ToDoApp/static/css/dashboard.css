@@ -1,8 +1,8 @@
 /* ============================================
-   DASHBOARD STYLES - Modern Purple/Orange Theme
+   DASHBOARD STYLES - Stable & Compatible
    ============================================ */
 
-:root {
+   :root {
     --purple-primary: #7C3AED;
     --purple-dark: #6D28D9;
     --purple-light: #A78BFA;
@@ -23,162 +23,29 @@
 }
 
 .dashboard-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
     background: #F9FAFB;
     color: var(--text-primary);
-    overflow-x: hidden;
 }
 
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* ============================================
-   SIDEBAR
-   ============================================ */
+/* ================= SIDEBAR ================= */
 
 .dashboard-sidebar {
     width: 260px;
     background: var(--white);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
     position: fixed;
     height: 100vh;
     left: 0;
     top: 0;
-    z-index: 1000;
 }
-
-.sidebar-brand {
-    padding: 24px 20px;
-    border-bottom: 1px solid var(--gray-medium);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.brand-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--purple-primary);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    font-size: 20px;
-}
-
-.brand-text h3 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-    line-height: 1.2;
-}
-
-.brand-text p {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin: 0;
-}
-
-.sidebar-nav {
-    flex: 1;
-    padding: 20px 0;
-    overflow-y: auto;
-}
-
-.nav-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    transition: all 0.2s;
-    position: relative;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.nav-item i {
-    width: 20px;
-    text-align: center;
-    font-size: 16px;
-}
-
-.nav-item:hover {
-    background: var(--gray-light);
-    color: var(--purple-primary);
-}
-
-.nav-item.active {
-    background: var(--purple-primary);
-    color: var(--white);
-    border-radius: 0;
-}
-
-.nav-item .badge {
-    margin-left: auto;
-    background: var(--purple-primary);
-    color: var(--white);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.nav-item.active .badge {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.sidebar-footer {
-    padding: 20px;
-    border-top: 1px solid var(--gray-medium);
-}
-
-.logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    background: var(--purple-primary);
-    color: var(--white);
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s;
-    width: 100%;
-    justify-content: center;
-}
-
-.logout-btn:hover {
-    background: var(--purple-dark);
-    color: var(--white);
-}
-
-/* ============================================
-   MAIN CONTENT
-   ============================================ */
 
 .dashboard-main {
-    flex: 1;
     margin-left: 260px;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    padding: 32px;
 }
 
-/* ============================================
-   HEADER
-   ============================================ */
+/* ================= HEADER ================= */
 
 .dashboard-header {
     background: var(--white);
@@ -186,127 +53,10 @@
     display: flex;
     align-items: center;
     gap: 24px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.header-search {
-    flex: 1;
-    position: relative;
-    max-width: 400px;
-}
-
-.header-search i {
-    position: absolute;
-    left: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-}
-
-.search-input {
-    width: 100%;
-    padding: 12px 16px 12px 44px;
-    border: 1px solid var(--gray-medium);
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s;
-}
-
-.search-input:focus {
-    border-color: var(--purple-primary);
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-.create-task-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 20px;
-    background: var(--orange-primary);
-    color: var(--white);
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s;
-    font-size: 14px;
-}
-
-.create-task-btn:hover {
-    background: var(--orange-light);
-    color: var(--white);
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.notification-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: var(--gray-light);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-}
-
-.notification-btn:hover {
-    background: var(--gray-medium);
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.profile-avatar {
-    width: 40px;
-    height: 40px;
-    background: var(--purple-primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-}
-
-.profile-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.profile-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.profile-title {
-    font-size: 12px;
-    color: var(--text-secondary);
-    line-height: 1.2;
-}
-
-/* ============================================
-   DASHBOARD CONTENT
-   ============================================ */
-
-.dashboard-content {
-    padding: 32px;
-    flex: 1;
-}
+/* ================= GRID ================= */
 
 .dashboard-row {
     display: grid;
@@ -323,60 +73,10 @@
     background: var(--white);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--gray-medium);
-}
-
-.card-header i {
-    color: var(--purple-primary);
-    font-size: 20px;
-}
-
-.card-header h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin: 0;
-    flex: 1;
-}
-
-.card-header .add-task-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--orange-primary);
-    color: var(--white);
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-/* ============================================
-   CALENDAR WIDGET
-   ============================================ */
-
-.calendar-card {
-    min-height: 400px;
-}
-
-.month-selector {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--gray-medium);
-    border-radius: 8px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    outline: none;
-}
+/* ================= CALENDAR ================= */
 
 .calendar-grid {
     display: grid;
@@ -384,147 +84,29 @@
     gap: 8px;
 }
 
-.calendar-day-header {
-    text-align: center;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    padding: 8px;
-}
-
+/* OLD-SCHOOL SQUARE FIX (replaces aspect-ratio) */
 .calendar-day {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.calendar-day:hover {
+    width: 100%;
+    padding-top: 100%;
+    position: relative;
     background: var(--gray-light);
-}
-
-.calendar-day.today {
-    background: var(--purple-primary);
-    color: var(--white);
-    font-weight: 600;
-}
-
-.calendar-day.other-month {
-    color: var(--gray-medium);
-}
-
-/* ============================================
-   ANALYTICS WIDGET
-   ============================================ */
-
-.analytics-card {
-    min-height: 400px;
-}
-
-.analytics-controls {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    justify-content: flex-end;
-}
-
-.period-btn {
-    padding: 6px 16px;
-    border: 1px solid var(--gray-medium);
-    background: var(--white);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all 0.2s;
 }
 
-.period-btn.active {
-    background: var(--purple-primary);
-    color: var(--white);
-    border-color: var(--purple-primary);
-}
-
-.analytics-content {
-    position: relative;
-    height: 300px;
-}
-
-/* ============================================
-   CATEGORY WIDGET
-   ============================================ */
-
-.category-card {
-    min-height: 400px;
-}
-
-.category-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-}
-
-.donut-chart-container {
-    position: relative;
-    width: 200px;
-    height: 200px;
-}
-
-.donut-center {
+.calendar-day span {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    text-align: center;
 }
 
-.donut-percentage {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--orange-primary);
-}
-
-.category-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
-}
-
-.legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-}
-
-/* ============================================
-   TODAY TASKS WIDGET
-   ============================================ */
-
-.tasks-card {
-    min-height: 400px;
-    display: flex;
-    flex-direction: column;
-}
+/* ================= TASKS ================= */
 
 .tasks-list {
-    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 16px;
 }
 
 .task-item {
@@ -534,67 +116,15 @@
     padding: 12px;
     background: var(--gray-light);
     border-radius: 8px;
-    transition: all 0.2s;
 }
 
-.task-item:hover {
-    background: var(--gray-medium);
-}
-
-.task-checkbox input[type="checkbox"] {
+.task-checkbox input {
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: var(--purple-primary);
 }
 
-.task-content {
-    flex: 1;
-}
-
-.task-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.task-time {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.see-more-btn {
-    display: block;
-    text-align: center;
-    padding: 12px;
-    background: var(--purple-primary);
-    color: var(--white);
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.see-more-btn:hover {
-    background: var(--purple-dark);
-    color: var(--white);
-}
-
-.no-tasks {
-    padding: 40px 20px;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 14px;
-}
-
-/* ============================================
-   SUMMARY CARDS
-   ============================================ */
-
-.summary-card {
-    min-height: 400px;
-}
+/* ================= SUMMARY ================= */
 
 .summary-grid {
     display: grid;
@@ -603,97 +133,29 @@
 }
 
 .summary-item {
-    display: flex;
-    gap: 16px;
-    padding: 16px;
     background: var(--gray-light);
+    padding: 16px;
     border-radius: 8px;
-}
-
-.summary-icon {
-    width: 48px;
-    height: 48px;
-    background: var(--purple-primary);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--white);
-    font-size: 20px;
-    flex-shrink: 0;
-}
-
-.summary-content {
-    flex: 1;
-}
-
-.summary-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
-}
-
-.summary-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--purple-primary);
-    margin-bottom: 8px;
-}
-
-.summary-progress {
-    height: 4px;
-    background: var(--gray-medium);
-    border-radius: 2px;
-    overflow: hidden;
 }
 
 .progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--purple-primary) 0%, var(--orange-primary) 100%);
-    transition: width 0.3s;
+    height: 4px;
+    background: linear-gradient(90deg, var(--purple-primary), var(--orange-primary));
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
-@media (max-width: 1200px) {
-    .dashboard-row:last-child {
-        grid-template-columns: 1fr 1fr;
-    }
-    
-    .summary-card {
-        grid-column: 1 / -1;
-    }
-}
+/* ================= RESPONSIVE ================= */
 
 @media (max-width: 768px) {
     .dashboard-sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s;
+        display: none;
     }
-    
-    .dashboard-sidebar.open {
-        transform: translateX(0);
-    }
-    
+
     .dashboard-main {
         margin-left: 0;
     }
-    
-    .dashboard-row {
-        grid-template-columns: 1fr;
-    }
-    
+
+    .dashboard-row,
     .dashboard-row:last-child {
         grid-template-columns: 1fr;
-    }
-    
-    .dashboard-header {
-        flex-wrap: wrap;
-    }
-    
-    .header-search {
-        max-width: 100%;
     }
 }

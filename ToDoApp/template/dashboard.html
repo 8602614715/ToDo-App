@@ -10,8 +10,10 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Dashboard - TodoApp</title>
 </head>
+
 <body class="dashboard-body">
     <div class="dashboard-container">
+
         <!-- LEFT SIDEBAR -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-brand">
@@ -19,46 +21,52 @@
                     <i class="fas fa-building"></i>
                 </div>
                 <div class="brand-text">
-                    <h3>Brand Name</h3>
-                    <p>Slogan Here</p>
+                    <h3>WorkTrack</h3>
+                    <p>Keep Work on Track</p>
                 </div>
             </div>
-            
+
             <nav class="sidebar-nav">
                 <a href="/dashboard/" class="nav-item active">
                     <i class="fas fa-th-large"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="/todos/todo-page" class="nav-item">
+
+                <a href="/dashboard/" class="nav-item">
                     <i class="fas fa-folder"></i>
-                    <span>Project</span>
+                    <span>Projects</span>
                 </a>
+
                 {% if is_manager %}
                 <a href="/admin/todo" class="nav-item">
                     <i class="fas fa-users"></i>
                     <span>Members</span>
                 </a>
                 {% endif %}
+
                 <a href="#" class="nav-item">
                     <i class="fas fa-envelope"></i>
                     <span>Messages</span>
                     <span class="badge">4</span>
                 </a>
+
                 <a href="#" class="nav-item">
                     <i class="fas fa-calendar"></i>
                     <span>Calendar</span>
                 </a>
+
                 <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Setting</span>
                 </a>
+
                 <a href="#" class="nav-item">
                     <i class="fas fa-sync"></i>
                     <span>New Update</span>
                     <span class="badge">2</span>
                 </a>
             </nav>
-            
+
             <div class="sidebar-footer">
                 <a href="/auth/logout" class="logout-btn">
                     <i class="fas fa-power-off"></i>
@@ -69,20 +77,34 @@
 
         <!-- MAIN CONTENT -->
         <main class="dashboard-main">
+
             <!-- TOP HEADER -->
             <header class="dashboard-header">
-                <div class="header-search">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search" class="search-input">
+                <form method="get" action="/dashboard/" class="header-search-form">
+                    <div class="header-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="search" value="{{ filters.search if filters else '' }}" placeholder="Search tasks..." class="search-input">
+                    </div>
+                </form>
+
+                <div class="header-actions-left">
+                    <a href="/todos/add-todo-page" class="create-task-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Create a New Task</span>
+                    </a>
+                    <a href="/todos/export?format=csv" class="export-btn" title="Export CSV">
+                        <i class="fas fa-file-csv"></i>
+                    </a>
+                    <a href="/todos/export?format=json" class="export-btn" title="Export JSON">
+                        <i class="fas fa-file-code"></i>
+                    </a>
                 </div>
-                <a href="/todos/add-todo-page" class="create-task-btn">
-                    <i class="fas fa-plus"></i>
-                    <span>Create a New Task</span>
-                </a>
+
                 <div class="header-actions">
                     <button class="notification-btn">
                         <i class="fas fa-bell"></i>
                     </button>
+
                     <div class="user-profile">
                         <div class="profile-avatar">
                             <i class="fas fa-user"></i>
@@ -97,14 +119,17 @@
 
             <!-- DASHBOARD CONTENT -->
             <div class="dashboard-content">
-                <!-- TOP ROW: Calendar & Analytics -->
+
+                <!-- TOP ROW -->
                 <div class="dashboard-row">
+
                     <!-- Calendar Widget -->
                     <div class="dashboard-card calendar-card">
                         <div class="card-header">
                             <i class="fas fa-calendar"></i>
                             <h3>Calendar</h3>
                         </div>
+
                         <div class="calendar-content">
                             <select class="month-selector" id="monthSelector">
                                 <option value="0">January 2025</option>
@@ -112,18 +137,20 @@
                                 <option value="2" selected>March 2025</option>
                                 <option value="3">April 2025</option>
                             </select>
+
                             <div class="calendar-grid" id="calendarGrid">
-                                <!-- Calendar will be generated by JS -->
+                                <!-- Calendar via JS -->
                             </div>
                         </div>
                     </div>
 
-                    <!-- Task Analytics Widget -->
+                    <!-- Analytics Widget -->
                     <div class="dashboard-card analytics-card">
                         <div class="card-header">
                             <i class="fas fa-chart-bar"></i>
                             <h3>Task Analytics</h3>
                         </div>
+
                         <div class="analytics-content">
                             <div class="analytics-controls">
                                 <button class="period-btn active" data-period="week">W</button>
@@ -133,16 +160,19 @@
                             <canvas id="analyticsChart"></canvas>
                         </div>
                     </div>
+
                 </div>
 
-                <!-- BOTTOM ROW: Project Category, Today Task, Summary -->
+                <!-- BOTTOM ROW -->
                 <div class="dashboard-row">
-                    <!-- Project Category Widget -->
+
+                    <!-- Category -->
                     <div class="dashboard-card category-card">
                         <div class="card-header">
                             <i class="fas fa-list"></i>
                             <h3>Project Category</h3>
                         </div>
+
                         <div class="category-content">
                             <div class="donut-chart-container">
                                 <canvas id="categoryChart"></canvas>
@@ -150,13 +180,12 @@
                                     <span class="donut-percentage">100%</span>
                                 </div>
                             </div>
-                            <div class="category-legend" id="categoryLegend">
-                                <!-- Legend will be generated by JS -->
-                            </div>
+
+                            <div class="category-legend" id="categoryLegend"></div>
                         </div>
                     </div>
 
-                    <!-- Today Task Widget -->
+                    <!-- Today Task -->
                     <div class="dashboard-card tasks-card">
                         <div class="card-header">
                             <i class="fas fa-file-alt"></i>
@@ -166,95 +195,379 @@
                                 <span>Add Task</span>
                             </a>
                         </div>
+
                         <div class="tasks-list" id="todayTasksList">
                             {% if today_tasks %}
                                 {% for task in today_tasks %}
                                 <div class="task-item" data-task-id="{{ task.id }}">
                                     <div class="task-checkbox">
-                                        <input type="checkbox" {% if task.status == 'completed' %}checked{% endif %} 
-                                               onchange="toggleTask({{ task.id }})">
+                                        <input type="checkbox"
+                                            {% if task.status == 'completed' %}checked{% endif %}>
                                     </div>
                                     <div class="task-content">
                                         <div class="task-title">{{ task.title }}</div>
-                                        <div class="task-time" data-created="{% if task.created_at %}{{ task.created_at.isoformat() }}{% endif %}">
-                                            Loading...
-                                        </div>
+                                        <div class="task-time">Loading...</div>
                                     </div>
                                 </div>
                                 {% endfor %}
                             {% else %}
                                 <div class="no-tasks">
-                                    <p>No tasks for today. Create a new task to get started!</p>
+                                    <p>No tasks for today.</p>
                                 </div>
                             {% endif %}
                         </div>
-                        <a href="/todos/todo-page" class="see-more-btn">See More</a>
+
+                        <a href="#tasks-section" class="see-more-btn">See More</a>
                     </div>
 
-                    <!-- Summary Cards -->
+                    <!-- Summary -->
                     <div class="dashboard-card summary-card">
                         <div class="summary-grid">
+
                             <div class="summary-item">
-                                <div class="summary-icon">
-                                    <i class="fas fa-boxes"></i>
-                                </div>
-                                <div class="summary-content">
-                                    <div class="summary-label">Total Project</div>
-                                    <div class="summary-value">{{ stats.total }}</div>
-                                    <div class="summary-progress">
-                                        <div class="progress-bar" style="width: {{ (stats.completed / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
-                                    </div>
-                                </div>
+                                <div class="summary-label">Total Project</div>
+                                <div class="summary-value">{{ stats.total }}</div>
                             </div>
 
                             <div class="summary-item">
-                                <div class="summary-icon">
-                                    <i class="fas fa-cog"></i>
-                                </div>
-                                <div class="summary-content">
-                                    <div class="summary-label">On Going Project</div>
-                                    <div class="summary-value">{{ stats.progress }}</div>
-                                    <div class="summary-progress">
-                                        <div class="progress-bar" style="width: {{ (stats.progress / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
-                                    </div>
-                                </div>
+                                <div class="summary-label">On Going</div>
+                                <div class="summary-value">{{ stats.progress }}</div>
                             </div>
 
                             <div class="summary-item">
-                                <div class="summary-icon">
-                                    <i class="fas fa-calendar-plus"></i>
-                                </div>
-                                <div class="summary-content">
-                                    <div class="summary-label">Upcoming Projects</div>
-                                    <div class="summary-value">{{ stats.upcoming }}</div>
-                                    <div class="summary-progress">
-                                        <div class="progress-bar" style="width: {{ (stats.upcoming / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
-                                    </div>
-                                </div>
+                                <div class="summary-label">Upcoming</div>
+                                <div class="summary-value">{{ stats.upcoming }}</div>
                             </div>
 
                             <div class="summary-item">
-                                <div class="summary-icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="summary-content">
-                                    <div class="summary-label">Complete Project</div>
-                                    <div class="summary-value">{{ stats.completed }}</div>
-                                    <div class="summary-progress">
-                                        <div class="progress-bar" style="width: {{ (stats.completed / stats.total * 100) if stats.total > 0 else 0 }}%"></div>
-                                    </div>
-                                </div>
+                                <div class="summary-label">Completed</div>
+                                <div class="summary-value">{{ stats.completed }}</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TASKS SECTION -->
+                <div class="dashboard-row full-width" id="tasks-section">
+                    <div class="dashboard-card tasks-table-card">
+                        <div class="card-header">
+                            <i class="fas fa-tasks"></i>
+                            <h3>All Tasks</h3>
+                            <div class="card-header-actions">
+                                <button class="filter-toggle-btn" onclick="toggleFilters()">
+                                    <i class="fas fa-filter"></i>
+                                    <span>Filters</span>
+                                </button>
                             </div>
                         </div>
+
+                        <!-- FILTERS SIDEBAR -->
+                        <div class="filters-sidebar" id="filtersSidebar">
+                            <div class="filters-header">
+                                <h4>Filters</h4>
+                                <button onclick="toggleFilters()" class="close-filters">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <!-- Category Filter -->
+                            <div class="filter-group">
+                                <h5><i class="fas fa-folder"></i> Categories</h5>
+                                <ul class="filter-list">
+                                    <li class="filter-item {% if not filters.category_id %}active{% endif %}">
+                                        <a href="/dashboard/?{{ request.query_params|urlencode|replace('category_id=', '')|replace('&category_id=', '') }}">
+                                            All Categories
+                                        </a>
+                                    </li>
+                                    {% for category in categories %}
+                                    <li class="filter-item {% if filters.category_id == category.id %}active{% endif %}">
+                                        <div class="filter-item-content">
+                                            <a href="/dashboard/?category_id={{ category.id }}&{{ request.query_params|urlencode|replace('category_id=' ~ filters.category_id, '') }}">
+                                                {{ category.name }}
+                                            </a>
+                                            <form method="post" action="/todos/category/{{ category.id }}/delete" style="display:inline;" onsubmit="return confirm('Delete this category?')">
+                                                <button type="submit" class="delete-category-btn" title="Delete">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                                <button class="btn-add-category" data-toggle="modal" data-target="#addCategoryModal">
+                                    <i class="fas fa-plus"></i> Add Category
+                                </button>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="filter-group">
+                                <h5><i class="fas fa-info-circle"></i> Status</h5>
+                                <ul class="filter-list">
+                                    <li class="filter-item {% if not filters.status %}active{% endif %}">
+                                        <a href="/dashboard/?{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+                                            All Status
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.status == 'pending' %}active{% endif %}">
+                                        <a href="/dashboard/?status=pending&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+                                            <span class="badge badge-warning">Pending</span>
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.status == 'progress' %}active{% endif %}">
+                                        <a href="/dashboard/?status=progress&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+                                            <span class="badge badge-info">Progress</span>
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.status == 'completed' %}active{% endif %}">
+                                        <a href="/dashboard/?status=completed&{{ request.query_params|urlencode|replace('status=' ~ filters.status, '')|replace('&status=' ~ filters.status, '') }}">
+                                            <span class="badge badge-success">Completed</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Priority Filter -->
+                            <div class="filter-group">
+                                <h5><i class="fas fa-exclamation-triangle"></i> Priority</h5>
+                                <ul class="filter-list">
+                                    <li class="filter-item {% if not filters.priority %}active{% endif %}">
+                                        <a href="/dashboard/?{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+                                            All Priorities
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.priority == 1 %}active{% endif %}">
+                                        <a href="/dashboard/?priority=1&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+                                            <span class="badge badge-danger">High</span>
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.priority == 2 %}active{% endif %}">
+                                        <a href="/dashboard/?priority=2&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+                                            <span class="badge badge-warning">Medium</span>
+                                        </a>
+                                    </li>
+                                    <li class="filter-item {% if filters.priority == 3 %}active{% endif %}">
+                                        <a href="/dashboard/?priority=3&{{ request.query_params|urlencode|replace('priority=' ~ filters.priority, '')|replace('&priority=' ~ filters.priority, '') }}">
+                                            <span class="badge badge-secondary">Low</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- SEARCH AND SORT BAR -->
+                        <div class="tasks-controls">
+                            <form method="get" action="/dashboard/" class="tasks-search-form">
+                                <div class="search-group">
+                                    <input type="text" name="search" value="{{ filters.search if filters else '' }}" 
+                                           placeholder="Search tasks..." class="form-control">
+                                </div>
+                                <div class="sort-group">
+                                    <select name="sort_by" class="form-control">
+                                        <option value="created_at" {% if filters.sort_by == 'created_at' %}selected{% endif %}>Sort by Date</option>
+                                        <option value="title" {% if filters.sort_by == 'title' %}selected{% endif %}>Sort by Title</option>
+                                        <option value="priority" {% if filters.sort_by == 'priority' %}selected{% endif %}>Sort by Priority</option>
+                                        <option value="due_date" {% if filters.sort_by == 'due_date' %}selected{% endif %}>Sort by Due Date</option>
+                                        <option value="status" {% if filters.sort_by == 'status' %}selected{% endif %}>Sort by Status</option>
+                                    </select>
+                                </div>
+                                <div class="sort-order-group">
+                                    <select name="sort_order" class="form-control">
+                                        <option value="desc" {% if filters.sort_order == 'desc' %}selected{% endif %}>Desc</option>
+                                        <option value="asc" {% if filters.sort_order == 'asc' %}selected{% endif %}>Asc</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn-apply-filters">
+                                    <i class="fas fa-search"></i> Apply
+                                </button>
+                                <!-- Preserve existing filters -->
+                                {% if filters.status %}
+                                <input type="hidden" name="status" value="{{ filters.status }}">
+                                {% endif %}
+                                {% if filters.category_id %}
+                                <input type="hidden" name="category_id" value="{{ filters.category_id }}">
+                                {% endif %}
+                                {% if filters.priority %}
+                                <input type="hidden" name="priority" value="{{ filters.priority }}">
+                                {% endif %}
+                            </form>
+                        </div>
+
+                        <!-- TASKS TABLE -->
+                        <div class="tasks-table-wrapper">
+                            <table class="tasks-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Title</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Category</th>
+                                        <th>Due Date</th>
+                                        <th>Tags</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if todos %}
+                                        {% for todo in todos %}
+                                        <tr class="{% if todo.status == 'completed' %}task-completed{% elif todo.due_date and todo.due_date < today %}task-overdue{% endif %}">
+                                            <td>{{ (pagination.page - 1) * pagination.per_page + loop.index }}</td>
+                                            <td>
+                                                {% if todo.status == 'completed' %}<s>{% endif %}
+                                                <a href="/todos/todo-details/{{ todo.id }}">{{ todo.title }}</a>
+                                                {% if todo.status == 'completed' %}</s>{% endif %}
+                                                {% if todo.description %}
+                                                <br><small class="text-muted">{{ todo.description[:50] }}{% if todo.description|length > 50 %}...{% endif %}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if todo.priority == 1 %}
+                                                <span class="badge badge-danger">High</span>
+                                                {% elif todo.priority == 2 %}
+                                                <span class="badge badge-warning">Medium</span>
+                                                {% else %}
+                                                <span class="badge badge-secondary">Low</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                  {% if todo.status == 'completed' %}badge-success
+                                                  {% elif todo.status == 'progress' %}badge-info
+                                                  {% else %}badge-warning{% endif %}">
+                                                  {{ todo.status.replace('_',' ').title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if todo.category %}
+                                                <span class="badge badge-primary">{{ todo.category.name }}</span>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if todo.due_date %}
+                                                  {% set days_diff = (todo.due_date - today).days %}
+                                                  {% if days_diff < 0 %}
+                                                  <span class="text-danger"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Overdue)</span>
+                                                  {% elif days_diff <= 3 %}
+                                                  <span class="text-warning"><strong>{{ todo.due_date.strftime('%Y-%m-%d') }}</strong> (Soon)</span>
+                                                  {% else %}
+                                                  {{ todo.due_date.strftime('%Y-%m-%d') }}
+                                                  {% endif %}
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if todo.tags %}
+                                                {% for tag in todo.tags.split(',') %}
+                                                <span class="badge badge-light">{{ tag.strip() }}</span>
+                                                {% endfor %}
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="task-actions">
+                                                    <form method="post" action="/todos/todo/{{ todo.id }}/toggle-complete" style="display:inline;">
+                                                        <button type="submit" class="btn-action btn-toggle" 
+                                                                title="{% if todo.status == 'completed' %}Mark Incomplete{% else %}Mark Complete{% endif %}">
+                                                            {% if todo.status == 'completed' %}<i class="fas fa-undo"></i>{% else %}<i class="fas fa-check"></i>{% endif %}
+                                                        </button>
+                                                    </form>
+                                                    <a href="/todos/edit-todo-page/{{ todo.id }}" class="btn-action btn-edit" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="/todos/todo-details/{{ todo.id }}" class="btn-action btn-view" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <form method="post" action="/todos/todo/{{ todo.id }}/delete" style="display:inline;" 
+                                                          onsubmit="return confirm('Delete this task?')">
+                                                        <button type="submit" class="btn-action btn-delete" title="Delete">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="8" class="text-center text-muted">
+                                                No tasks found. <a href="/todos/add-todo-page">Create your first task!</a>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- PAGINATION -->
+                        {% if pagination and pagination.total_pages > 1 %}
+                        <div class="tasks-pagination">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination">
+                                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                        <a class="page-link" href="/dashboard/?page={{ pagination.page - 1 }}&{{ request.query_params|urlencode }}">Previous</a>
+                                    </li>
+                                    {% for page_num in range(1, pagination.total_pages + 1) %}
+                                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                        <a class="page-link" href="/dashboard/?page={{ page_num }}&{{ request.query_params|urlencode }}">{{ page_num }}</a>
+                                    </li>
+                                    {% endfor %}
+                                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                        <a class="page-link" href="/dashboard/?page={{ pagination.page + 1 }}&{{ request.query_params|urlencode }}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Category</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form method="post" action="/todos/category">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="categoryName">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" name="name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
     <script src="{{ url_for('static', path='/js/jquery-slim.js') }}"></script>
     <script src="{{ url_for('static', path='/js/popper.js') }}"></script>
     <script src="{{ url_for('static', path='/js/bootstrap.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/dashboard.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/js/dashboard.js') }}"></script>
+    <script>
+        function toggleFilters() {
+            const sidebar = document.getElementById('filtersSidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,90 +1,84 @@
-// Dashboard JavaScript
+// ================= DASHBOARD JS =================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     initializeCalendar();
     initializeAnalyticsChart();
     initializeCategoryChart();
     setupPeriodButtons();
     setupTaskToggles();
+    loadSummaryStats();
+    updateInitialTaskTimes();
 });
 
 // ============================================
 // CALENDAR
 // ============================================
 
+let currentYear = new Date().getFullYear();
+
 function initializeCalendar() {
     const calendarGrid = document.getElementById('calendarGrid');
     if (!calendarGrid) return;
-    
+
     const today = new Date();
     const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
-    
-    // Month selector handler
+
     const monthSelector = document.getElementById('monthSelector');
     if (monthSelector) {
-        monthSelector.addEventListener('change', function() {
-            const selectedMonth = parseInt(this.value);
-            renderCalendar(selectedMonth, currentYear);
+        monthSelector.addEventListener('change', function () {
+            renderCalendar(parseInt(this.value), currentYear);
         });
     }
-    
+
     renderCalendar(currentMonth, currentYear);
 }
 
 function renderCalendar(month, year) {
     const calendarGrid = document.getElementById('calendarGrid');
     if (!calendarGrid) return;
-    
+
     calendarGrid.innerHTML = '';
-    
-    // Day headers
+
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    dayHeaders.forEach(day => {
-        const header = document.createElement('div');
-        header.className = 'calendar-day-header';
-        header.textContent = day;
-        calendarGrid.appendChild(header);
+    dayHeaders.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'calendar-day-header';
+        h.textContent = d;
+        calendarGrid.appendChild(h);
     });
-    
-    // Get first day of month and number of days
+
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const today = new Date();
-    
-    // Previous month days
+
     const prevMonthDays = new Date(year, month, 0).getDate();
     for (let i = firstDay - 1; i >= 0; i--) {
-        const day = document.createElement('div');
-        day.className = 'calendar-day other-month';
-        day.textContent = prevMonthDays - i;
-        calendarGrid.appendChild(day);
+        const d = document.createElement('div');
+        d.className = 'calendar-day other-month';
+        d.textContent = prevMonthDays - i;
+        calendarGrid.appendChild(d);
     }
-    
-    // Current month days
+
     for (let i = 1; i <= daysInMonth; i++) {
-        const day = document.createElement('div');
-        day.className = 'calendar-day';
-        
-        const date = new Date(year, month, i);
-        if (date.getDate() === today.getDate() && 
-            date.getMonth() === today.getMonth() && 
-            date.getFullYear() === today.getFullYear()) {
-            day.classList.add('today');
+        const d = document.createElement('div');
+        d.className = 'calendar-day';
+
+        if (
+            i === today.getDate() &&
+            month === today.getMonth() &&
+            year === today.getFullYear()
+        ) {
+            d.classList.add('today');
         }
-        
-        day.textContent = i;
-        calendarGrid.appendChild(day);
+
+        d.textContent = i;
+        calendarGrid.appendChild(d);
     }
-    
-    // Next month days to fill grid
-    const totalCells = calendarGrid.children.length;
-    const remainingCells = 42 - totalCells; // 6 rows * 7 days
-    for (let i = 1; i <= remainingCells; i++) {
-        const day = document.createElement('div');
-        day.className = 'calendar-day other-month';
-        day.textContent = i;
-        calendarGrid.appendChild(day);
+
+    while (calendarGrid.children.length < 49) {
+        const d = document.createElement('div');
+        d.className = 'calendar-day other-month';
+        calendarGrid.appendChild(d);
     }
 }
 
@@ -97,97 +91,54 @@ let analyticsChart = null;
 function initializeAnalyticsChart() {
     const ctx = document.getElementById('analyticsChart');
     if (!ctx) return;
-    
-    // Default data (week view)
-    const defaultData = {
-        labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        datasets: [
-            {
-                label: 'Tasks',
-                data: [12, 19, 15, 19, 14, 16, 18],
-                borderColor: '#F97316',
-                backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                tension: 0.4,
-                fill: true
-            },
-            {
-                label: 'Completed',
-                data: [8, 12, 10, 15, 11, 13, 14],
-                borderColor: '#7C3AED',
-                backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                tension: 0.4,
-                fill: true
-            }
-        ]
-    };
-    
+
     analyticsChart = new Chart(ctx, {
         type: 'line',
-        data: defaultData,
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Tasks',
+                data: [],
+                borderColor: '#F97316',
+                backgroundColor: 'rgba(249,115,22,0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    titleFont: { size: 14 },
-                    bodyFont: { size: 12 }
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        stepSize: 20
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
-                    }
-                },
-                x: {
-                    grid: {
-                        display: false
-                    }
-                }
+                y: { beginAtZero: true },
+                x: { grid: { display: false } }
             }
         }
     });
-    
-    // Load analytics data
+
     loadAnalyticsData('week');
 }
 
 function loadAnalyticsData(period) {
     fetch(`/dashboard/api/analytics?period=${period}`)
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            if (data.data && analyticsChart) {
-                const labels = data.data.map(d => d.day);
-                const counts = data.data.map(d => d.count);
-                
-                analyticsChart.data.labels = labels;
-                analyticsChart.data.datasets[0].data = counts;
-                analyticsChart.update();
-            }
+            if (!data.data || !analyticsChart) return;
+
+            analyticsChart.data.labels = data.data.map(d => d.day);
+            analyticsChart.data.datasets[0].data = data.data.map(d => d.count);
+            analyticsChart.update();
         })
-        .catch(error => {
-            console.error('Error loading analytics:', error);
-        });
+        .catch(err => console.error(err));
 }
 
 function setupPeriodButtons() {
-    const buttons = document.querySelectorAll('.period-btn');
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            buttons.forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.period-btn')
+                .forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            const period = this.dataset.period;
-            loadAnalyticsData(period);
+            loadAnalyticsData(this.dataset.period);
         });
     });
 }
@@ -196,251 +147,140 @@ function setupPeriodButtons() {
 // CATEGORY CHART
 // ============================================
 
-let categoryChart = null;
-
 function initializeCategoryChart() {
     const ctx = document.getElementById('categoryChart');
     if (!ctx) return;
-    
-    // Load category data
+
     fetch('/dashboard/api/project-categories')
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            if (data.categories && data.categories.length > 0) {
-                renderCategoryChart(data.categories);
-                renderCategoryLegend(data.categories);
-            } else {
-                // Default data
-                renderCategoryChart([
-                    { name: 'UX/UI Design', count: 40, percentage: 40 },
-                    { name: 'Video Editing', count: 35, percentage: 35 },
-                    { name: 'Photographer', count: 25, percentage: 25 }
-                ]);
-            }
+            const cats = data.categories || [
+                { name: 'UX/UI', percentage: 40 },
+                { name: 'Video', percentage: 35 },
+                { name: 'Photo', percentage: 25 }
+            ];
+            renderCategoryChart(cats);
+            renderCategoryLegend(cats);
         })
-        .catch(error => {
-            console.error('Error loading categories:', error);
-            // Default data on error
-            renderCategoryChart([
-                { name: 'UX/UI Design', count: 40, percentage: 40 },
-                { name: 'Video Editing', count: 35, percentage: 35 },
-                { name: 'Photographer', count: 25, percentage: 25 }
-            ]);
-        });
+        .catch(console.error);
 }
 
 function renderCategoryChart(categories) {
-    const ctx = document.getElementById('categoryChart');
-    if (!ctx) return;
-    
-    const colors = ['#7C3AED', '#F97316', '#A78BFA', '#FB923C', '#C4B5FD'];
-    
-    categoryChart = new Chart(ctx, {
+    new Chart(document.getElementById('categoryChart'), {
         type: 'doughnut',
         data: {
             labels: categories.map(c => c.name),
             datasets: [{
                 data: categories.map(c => c.percentage),
-                backgroundColor: colors.slice(0, categories.length),
-                borderWidth: 0
+                backgroundColor: ['#7C3AED', '#F97316', '#A78BFA']
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.parsed || 0;
-                            return `${label}: ${value}%`;
-                        }
-                    }
-                }
-            },
+            plugins: { legend: { display: false } },
             cutout: '70%'
         }
     });
-    
-    // Update center percentage
-    const total = categories.reduce((sum, c) => sum + c.percentage, 0);
-    const centerText = document.querySelector('.donut-percentage');
-    if (centerText) {
-        centerText.textContent = `${Math.round(total)}%`;
-    }
+
+    const total = categories.reduce((s, c) => s + c.percentage, 0);
+    const center = document.querySelector('.donut-percentage');
+    if (center) center.textContent = `${total}%`;
 }
 
 function renderCategoryLegend(categories) {
     const legend = document.getElementById('categoryLegend');
     if (!legend) return;
-    
+
     legend.innerHTML = '';
-    const colors = ['#7C3AED', '#F97316', '#A78BFA', '#FB923C', '#C4B5FD'];
-    
-    categories.forEach((cat, index) => {
-        const item = document.createElement('div');
-        item.className = 'legend-item';
-        
-        const dot = document.createElement('div');
-        dot.className = 'legend-dot';
-        dot.style.backgroundColor = colors[index % colors.length];
-        
-        const label = document.createElement('span');
-        label.textContent = cat.name;
-        
-        item.appendChild(dot);
-        item.appendChild(label);
-        legend.appendChild(item);
+    categories.forEach((c, i) => {
+        legend.innerHTML += `
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#7C3AED"></div>
+                <span>${escapeHtml(c.name)}</span>
+            </div>
+        `;
     });
 }
 
 // ============================================
-// TASK MANAGEMENT
+// TASKS
 // ============================================
 
 function setupTaskToggles() {
-    const checkboxes = document.querySelectorAll('.task-item input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const taskItem = this.closest('.task-item');
-            const taskId = taskItem.dataset.taskId;
-            if (taskId) {
-                toggleTask(taskId);
-            }
-        });
+    document.addEventListener('change', e => {
+        if (e.target.matches('.task-item input[type="checkbox"]')) {
+            const task = e.target.closest('.task-item');
+            if (task?.dataset.taskId) toggleTask(task.dataset.taskId);
+        }
     });
 }
 
 function toggleTask(taskId) {
-    fetch(`/dashboard/api/task/${taskId}/toggle`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            // Reload today's tasks
-            loadTodayTasks();
-        }
-    })
-    .catch(error => {
-        console.error('Error toggling task:', error);
-    });
+    fetch(`/dashboard/api/task/${taskId}/toggle`, { method: 'POST' })
+        .then(r => r.json())
+        .then(() => loadTodayTasks())
+        .catch(console.error);
 }
 
 function loadTodayTasks() {
     fetch('/dashboard/api/today-tasks')
-        .then(response => response.json())
-        .then(data => {
-            if (data.tasks) {
-                updateTasksList(data.tasks);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading tasks:', error);
-        });
+        .then(r => r.json())
+        .then(d => d.tasks && updateTasksList(d.tasks))
+        .catch(console.error);
 }
 
 function updateTasksList(tasks) {
-    const tasksList = document.getElementById('todayTasksList');
-    if (!tasksList) return;
-    
-    tasksList.innerHTML = '';
-    
-    tasks.forEach(task => {
-        const taskItem = document.createElement('div');
-        taskItem.className = 'task-item';
-        taskItem.dataset.taskId = task.id;
-        
-        const timeAgo = calculateTimeAgo(task.created_at || new Date().toISOString());
-        
-        taskItem.innerHTML = `
-            <div class="task-checkbox">
-                <input type="checkbox" ${task.completed ? 'checked' : ''} 
-                       onchange="toggleTask(${task.id})">
-            </div>
-            <div class="task-content">
-                <div class="task-title">${escapeHtml(task.title)}</div>
-                <div class="task-time">${timeAgo}</div>
+    const list = document.getElementById('todayTasksList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    tasks.forEach(t => {
+        list.innerHTML += `
+            <div class="task-item" data-task-id="${t.id}">
+                <div class="task-checkbox">
+                    <input type="checkbox" ${t.status === 'completed' ? 'checked' : ''}>
+                </div>
+                <div class="task-content">
+                    <div class="task-title">${escapeHtml(t.title)}</div>
+                    <div class="task-time">${calculateTimeAgo(t.created_at)}</div>
+                </div>
             </div>
         `;
-        
-        tasksList.appendChild(taskItem);
     });
 }
 
-function calculateTimeAgo(createdAt) {
-    if (!createdAt) return 'just now';
-    
-    const now = new Date();
-    const created = new Date(createdAt);
-    const diffMs = now - created;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    
-    if (diffSec < 60) {
-        return 'just now';
-    } else if (diffMin < 60) {
-        return `${diffMin} min ago`;
-    } else if (diffHour < 24) {
-        return `${diffHour} hour ago`;
-    } else {
-        const diffDay = Math.floor(diffHour / 24);
-        return `${diffDay} day ago`;
-    }
+// ============================================
+// HELPERS
+// ============================================
+
+function calculateTimeAgo(date) {
+    if (!date) return 'just now';
+    const diff = Math.floor((Date.now() - new Date(date)) / 60000);
+    if (diff < 1) return 'just now';
+    if (diff < 60) return `${diff} min ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} hr ago`;
+    return `${Math.floor(diff / 1440)} day ago`;
 }
 
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
 }
 
-// Update time displays on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const timeElements = document.querySelectorAll('.task-time[data-created]');
-    timeElements.forEach(el => {
-        const createdAt = el.getAttribute('data-created');
-        if (createdAt) {
-            el.textContent = calculateTimeAgo(createdAt);
-        }
-    });
-});
-
-// Make toggleTask available globally
-window.toggleTask = toggleTask;
+function updateInitialTaskTimes() {
+    document.querySelectorAll('.task-time[data-created]')
+        .forEach(el => el.textContent = calculateTimeAgo(el.dataset.created));
+}
 
 // ============================================
-// SUMMARY STATS
+// SUMMARY
 // ============================================
 
 function loadSummaryStats() {
     fetch('/dashboard/api/summary')
-        .then(response => response.json())
-        .then(data => {
-            updateSummaryCards(data);
-        })
-        .catch(error => {
-            console.error('Error loading summary:', error);
-        });
+        .then(r => r.json())
+        .catch(console.error);
 }
 
-function updateSummaryCards(stats) {
-    // Update summary values if needed
-    const summaryItems = document.querySelectorAll('.summary-value');
-    // This would need to be customized based on your HTML structure
-}
-
-// Load summary on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadSummaryStats();
-});
+// expose
+window.toggleTask = toggleTask;
